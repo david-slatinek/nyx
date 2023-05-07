@@ -1,12 +1,12 @@
 version: "3.9"
 
 services:
-  api:
+  dialog-api:
     build: .
     ports:
       - "8080:8080"
-    container_name: dialog-api
-    hostname: dialog-service
+    container_name: dialog-api-con
+    hostname: dialog-api-service
     restart: on-failure
     env_file:
       - .env-prod

@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  dialog-model:
+    build: .
+    ports:
+      - "9080:9080"
+    container_name: dialog-model-con
+    hostname: dialog-model-service
+    restart: on-failure
+    networks:
+      - nyx-network
+
+networks:
+  nyx-network:
+    name: nyx-network
+    driver: bridge

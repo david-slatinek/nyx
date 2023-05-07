@@ -5,7 +5,6 @@ description = ""
 authors = ["david-slatinek"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "dialog_model"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
