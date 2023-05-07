@@ -9,6 +9,7 @@ import (
 	"main/controller"
 	"main/db"
 	"main/env"
+	"main/model"
 	"net/http"
 	"os"
 	"os/signal"
@@ -44,6 +45,14 @@ func main() {
 
 	router := gin.Default()
 
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, model.Error{Error: "not found"})
+	})
+
+	router.NoMethod(func(c *gin.Context) {
+		c.JSON(http.StatusMethodNotAllowed, model.Error{Error: "method not allowed"})
+	})
+	
 	router.GET("/user", dialogController.UserID)
 	router.GET("/dialog", dialogController.DialogID)
 	router.POST("/dialog", dialogController.AddDialog)
