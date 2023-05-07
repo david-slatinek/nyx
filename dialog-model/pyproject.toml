@@ -3,7 +3,7 @@ name = "dialog-model"
 version = "0.1.0"
 description = ""
 authors = ["david-slatinek"]
-license = "MIT"
+license = "Apache 2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
