@@ -12,6 +12,8 @@ github.com/go-kivik/kivik/v3 v3.2.4 h1:PaxFMzeRriBRwBg8MhRuNmnqimSyugRIsm8a8KVZH
 github.com/go-kivik/kivik/v3 v3.2.4/go.mod h1:AOPm24bBxkgCf6iw9Di9EX5ABAVXS+unoKXwgOVETa0=
 github.com/go-kivik/kiviktest/v3 v3.0.4/go.mod h1:sqsz3M2sJxTxAUdOj+2SU21y4phcpYc0FJIn+hbf1D0=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=

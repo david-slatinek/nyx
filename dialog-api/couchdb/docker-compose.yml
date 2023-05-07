@@ -11,24 +11,10 @@ services:
       - "COUCHDB_USER=${COUCHDB_USER}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
     volumes:
-      - couchdb_data:/opt/couchdb/data
-      - couchdb_config:/opt/couchdb/etc/local.d
+      - $HOME/dialog-db/couchdb-data:/opt/couchdb/data
+      - $HOME/dialog-db/couchdb-config:/opt/couchdb/etc/local.d
     networks:
       - nyx-network
-
-volumes:
-  couchdb_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: $HOME/couchdb_data
-  couchdb_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: $HOME/couchdb_config
 
 networks:
   nyx-network:
