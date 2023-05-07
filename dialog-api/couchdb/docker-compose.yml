@@ -18,4 +18,5 @@ services:
 
 networks:
   nyx-network:
+    name: nyx-network
     driver: bridge
