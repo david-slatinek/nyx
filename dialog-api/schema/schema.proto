@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package schema;
+
+option go_package = "./";
+
+message DialogRequest {
+  string text = 1;
+}
+
+message DialogResponse {
+  string answer = 1;
+}
+
+service DialogService {
+  rpc Dialog(DialogRequest) returns (DialogResponse);
+}

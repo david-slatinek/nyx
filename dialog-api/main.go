@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-kivik/couchdb/v3"
 	"log"
+	"main/client"
 	"main/controller"
 	"main/db"
 	"main/env"
@@ -41,18 +42,26 @@ func main() {
 		}
 	}(couchDB)
 
-	dialogController := controller.NewDialogController(couchDB)
-
 	router := gin.Default()
-
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, model.Error{Error: "not found"})
 	})
-
 	router.NoMethod(func(c *gin.Context) {
 		c.JSON(http.StatusMethodNotAllowed, model.Error{Error: "method not allowed"})
 	})
-	
+
+	grpcClient, err := client.NewClient(couchDB)
+	if err != nil {
+		log.Fatalf("failed to connect to grpc: %v", err)
+	}
+	defer func(client client.Client) {
+		if err := client.Close(); err != nil {
+			log.Printf("failed to close grpc: %v", err)
+		}
+	}(grpcClient)
+
+	dialogController := controller.NewDialogController(couchDB, grpcClient)
+
 	router.GET("/user", dialogController.UserID)
 	router.GET("/dialog", dialogController.DialogID)
 	router.POST("/dialog", dialogController.AddDialog)

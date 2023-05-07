@@ -1,16 +1,17 @@
 [tool.poetry]
-name = "dialog-api"
+name = "dialog-model"
 version = "0.1.0"
 description = ""
 authors = ["david-slatinek"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "dialog_api"}]
+packages = [{include = "dialog_model"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 torch = "^2.0.0"
-
+grpcio-tools = "^1.54.0"
+grpcio = "^1.54.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"

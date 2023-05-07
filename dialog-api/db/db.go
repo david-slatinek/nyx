@@ -5,6 +5,7 @@ import (
 	"github.com/go-kivik/kivik/v3"
 	"main/model"
 	"os"
+	"time"
 )
 
 type CouchDB struct {
@@ -18,7 +19,7 @@ func NewCouchDB() (CouchDB, error) {
 		return CouchDB{}, err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	couchdb := client.DB(ctx, os.Getenv("DB_NAME"))
@@ -26,7 +27,7 @@ func NewCouchDB() (CouchDB, error) {
 		return CouchDB{}, couchdb.Err()
 	}
 
-	ctx, cancel = context.WithCancel(context.Background())
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	_, err = client.Ping(ctx)
@@ -45,7 +46,7 @@ func (receiver CouchDB) Close(ctx context.Context) error {
 }
 
 func (receiver CouchDB) AddDialog(dialog model.Dialog) error {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	_, err := receiver.couchDB.Put(ctx, dialog.ID, dialog)

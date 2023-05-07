@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"main/client"
 	"main/db"
 	"main/model"
 	"main/util"
@@ -11,11 +12,12 @@ import (
 )
 
 type DialogController struct {
-	db db.CouchDB
+	db     db.CouchDB
+	client client.Client
 }
 
-func NewDialogController(db db.CouchDB) DialogController {
-	return DialogController{db: db}
+func NewDialogController(db db.CouchDB, client client.Client) DialogController {
+	return DialogController{db: db, client: client}
 }
 
 func (receiver DialogController) UserID(ctx *gin.Context) {
@@ -27,26 +29,33 @@ func (receiver DialogController) DialogID(ctx *gin.Context) {
 }
 
 func (receiver DialogController) AddDialog(ctx *gin.Context) {
-	var dialog model.Dialog
-	if err := ctx.ShouldBindJSON(&dialog); err != nil {
+	dialog, err := util.GetDialog(ctx)
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model.Error{Error: err.Error()})
 		return
 	}
 
-	dialog.ID = uuid.New().String()
-	dialog.UserID = util.UserID
-
-	if len(dialog.DialogID) != 36 {
-		ctx.JSON(http.StatusBadRequest, model.Error{Error: "invalid dialog id, must be uuid v4"})
-		return
-	}
-	dialog.DialogType = "user"
-	dialog.Timestamp = time.Now()
-
-	err := receiver.db.AddDialog(dialog)
+	err = receiver.db.AddDialog(dialog)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
 		return
 	}
-	ctx.Status(http.StatusCreated)
+
+	answer, err := receiver.client.GetAnswer(dialog)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
+
+	dialog.ID = uuid.New().String()
+	dialog.DialogType = "bot"
+	dialog.Timestamp = time.Now()
+	dialog.Text = answer
+
+	err = receiver.db.AddDialog(dialog)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"answer": answer})
 }
