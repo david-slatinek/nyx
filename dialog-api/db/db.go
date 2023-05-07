@@ -44,13 +44,10 @@ func (receiver CouchDB) Close(ctx context.Context) error {
 	return receiver.client.Close(ctx)
 }
 
-func (receiver CouchDB) AddDocument(chat model.Chat) error {
+func (receiver CouchDB) AddDialog(dialog model.Dialog) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	_, err := receiver.couchDB.Put(ctx, chat.ID, chat)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, err := receiver.couchDB.Put(ctx, dialog.ID, dialog)
+	return err
 }

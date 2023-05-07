@@ -2,15 +2,18 @@ package main
 
 import (
 	"context"
-	"github.com/google/uuid"
+	"errors"
+	"github.com/gin-gonic/gin"
+	_ "github.com/go-kivik/couchdb/v3"
 	"log"
+	"main/controller"
 	"main/db"
 	"main/env"
-	"main/model"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
-
-	_ "github.com/go-kivik/couchdb/v3" // The couchDB driver
 )
 
 func main() {
@@ -37,17 +40,37 @@ func main() {
 		}
 	}(couchDB)
 
-	chat := model.Chat{
-		ID:        uuid.New().String(),
-		UserID:    "asdervt4615",
-		ChatID:    "tev845",
-		ChatType:  "user",
-		Timestamp: time.Now(),
-		Text:      "Hello, who are you?",
+	dialogController := controller.NewDialogController(couchDB)
+
+	router := gin.Default()
+
+	router.GET("/user", dialogController.UserID)
+	router.GET("/dialog", dialogController.DialogID)
+	router.POST("/dialog", dialogController.AddDialog)
+
+	srv := &http.Server{
+		Addr:         ":8080",
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      router,
 	}
 
-	err = couchDB.AddDocument(chat)
-	if err != nil {
-		log.Fatalf("failed to add document: %v", err)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("ListenAndServe() error: %s\n", err)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
+	<-c
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("Shutdown() error: %s\n", err)
 	}
+	log.Println("shutting down")
 }
