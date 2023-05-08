@@ -6,7 +6,6 @@ option go_package = "./";
 
 message DialogRequest {
   string text = 1;
-  string dialog_id = 2;
 }
 
 message DialogResponse {

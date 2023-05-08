@@ -35,8 +35,7 @@ func (receiver Client) GetAnswer(dialog model.Dialog) (string, error) {
 	defer cancel()
 
 	answer, err := receiver.client.Dialog(ctx, &pb.DialogRequest{
-		Text:     dialog.Text,
-		DialogId: dialog.DialogID,
+		Text: dialog.Text,
 	})
 	return answer.Answer, err
 }
