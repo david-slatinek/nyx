@@ -13,8 +13,15 @@ class DialogServiceServicer(pb2_grpc.DialogServiceServicer):
         self.chat_history_ids = torch.tensor([])
         self.bot_input_ids = torch.tensor([])
         self.step = 0
+        self.dialog_id = 0
 
     def Dialog(self, request, context):
+        if request.dialog_id != self.dialog_id:
+            self.chat_history_ids = torch.tensor([])
+            self.bot_input_ids = torch.tensor([])
+            self.step = 0
+            self.dialog_id = request.dialog_id
+
         question = request.text
         print(f"Question: {question}")
 
@@ -26,11 +33,14 @@ class DialogServiceServicer(pb2_grpc.DialogServiceServicer):
 
         answer = tokenizer.decode(self.chat_history_ids[:, self.bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
 
+        print(f"Answer: {answer}")
+
         self.step += 1
         if self.step > 10000:
             self.chat_history_ids = torch.tensor([])
             self.bot_input_ids = torch.tensor([])
             self.step = 0
+            self.dialog_id = 0
 
         return pb2.DialogResponse(answer=answer)
 

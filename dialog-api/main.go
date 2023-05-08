@@ -50,7 +50,7 @@ func main() {
 		c.JSON(http.StatusMethodNotAllowed, model.Error{Error: "method not allowed"})
 	})
 
-	grpcClient, err := client.NewClient(couchDB)
+	grpcClient, err := client.NewClient()
 	if err != nil {
 		log.Fatalf("failed to connect to grpc: %v", err)
 	}
