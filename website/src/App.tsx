@@ -6,11 +6,15 @@ import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import Header from "./components/Header";
 import Dialog from "./components/Dialog";
 import axios from "axios";
+import End from "./components/End";
 
 const App = () => {
         window.addEventListener("beforeunload", function (event) {
             try {
-                axios.post("http://localhost:8080/end");
+                axios.post("http://localhost:8080/end", {
+                    text: "end",
+                    dialogID: sessionStorage.getItem("dialogID"),
+                });
             } catch (error) {
                 console.error(error);
             }
@@ -51,6 +55,7 @@ const App = () => {
 
                         <Routes>
                             <Route path="/" element={<Dialog/>}/>
+                            <Route path="/end" element={<End/>}/>
                         </Routes>
                     </div>
                 </Router>
