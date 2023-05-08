@@ -7,7 +7,7 @@ services:
       - "9080:9080"
     container_name: dialog-model-con
     hostname: dialog-model-service
-    restart: no
+    restart: unless-stopped
     networks:
       - nyx-network
 
