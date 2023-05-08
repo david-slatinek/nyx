@@ -12,23 +12,35 @@ const Dialog = () => {
 
     const handleMessageSubmit = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
+        if (inputText.trim() === "") return;
+
         const message = {
             text: inputText,
             isUser: true,
         };
-        setMessages([...messages, message]);
+
+        messages.push(message)
         setInputText("");
 
         try {
-            const response = await axios.post("/api/chat", {message});
+            const response = await axios.post("http://localhost:8080/dialog",
+                {
+                    text: message.text,
+                    dialogID: sessionStorage.getItem("dialogID"),
+                });
             const data = response.data;
             const responseMessage = {
-                text: data.message,
+                text: data.answer,
                 isUser: false,
             };
             setMessages([...messages, responseMessage]);
         } catch (error) {
             console.error(error);
+            const responseMessage = {
+                text: "Failed to fetch data from the API: " + error,
+                isUser: false,
+            };
+            setMessages([...messages, responseMessage]);
         }
     };
 
@@ -42,7 +54,7 @@ const Dialog = () => {
                             message.isUser ? 'bg-gray-300 self-end' : 'bg-blue-400 self-start'
                         }`}
                     >
-                        {message.text}
+                        <p className="text-lg font-semibold">{message.text}</p>
                     </div>
                 ))}
             </div>
@@ -51,7 +63,8 @@ const Dialog = () => {
                     type="text"
                     value={inputText}
                     onChange={(event) => setInputText(event.target.value)}
-                    className="flex-1 rounded-lg p-2 mr-2 bg-gray-200"
+                    placeholder="Type your message here"
+                    className="w-full mr-2 py-2 px-4 border border-gray-400 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <button type="submit" className="bg-blue-500 text-white rounded-lg p-2">
                     Send
