@@ -1,9 +1,14 @@
 import React, {useState} from "react";
 import axios from "axios";
 
+interface Message {
+    text: string;
+    isUser: boolean;
+}
+
 const Dialog = () => {
-    const [messages, setMessages] = useState([]);
-    const [inputText, setInputText] = useState('');
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [inputText, setInputText] = useState("");
 
     const handleMessageSubmit = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
@@ -12,10 +17,10 @@ const Dialog = () => {
             isUser: true,
         };
         setMessages([...messages, message]);
-        setInputText('');
+        setInputText("");
 
         try {
-            const response = await axios.post('/api/chat', {message});
+            const response = await axios.post("/api/chat", {message});
             const data = response.data;
             const responseMessage = {
                 text: data.message,
@@ -28,12 +33,12 @@ const Dialog = () => {
     };
 
     return (
-        <div>
-            <div className="h-screen flex flex-col justify-end px-4 py-8 space-y-4">
+        <div className={"mb-10 relative min-h-screen"}>
+            <div className="h-screen flex flex-col justify-end px-4 py-8 space-y-4 overflow-y-auto">
                 {messages.map((message, index) => (
                     <div
                         key={index}
-                        className={`p-4 mb-20 rounded-lg ${
+                        className={`p-4 rounded-lg ${
                             message.isUser ? 'bg-gray-300 self-end' : 'bg-blue-400 self-start'
                         }`}
                     >

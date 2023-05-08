@@ -1,27 +1,56 @@
-import React from "react";
-import {createRoot} from "react-dom/client";
+import React, {useState} from "react";
 
 import "./index.scss";
+import {createRoot} from "react-dom/client";
+import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import Header from "./components/Header";
 import Dialog from "./components/Dialog";
-import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 
-const App = () => (
-    <>
-        <div>
-            <Header/>
-        </div>
+const App = () => {
+        const [error, setError] = useState("");
 
-        <Router>
-            <div>
-                <Routes>
-                    <Route path="/"/>
-                    <Route path="/dialog" element={<Dialog/>}/>
-                </Routes>
-            </div>
-        </Router>
-    </>
-);
+        fetch("http://localhost:8080/dialog", {
+            method: "GET",
+        })
+            .then(response => response.json())
+            .then(data => {
+                sessionStorage.setItem("dialogID", data["dialogID"]);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                setError("Failed to fetch data from the API: " + error);
+            });
+
+        return (
+            <>
+                <div>
+                    <Header/>
+                </div>
+
+                <Router>
+                    <div>
+                        {error && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                                 role="alert">
+                                <strong className="font-bold">Error: </strong>
+                                <span className="block sm:inline">{error}</span>
+                                <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
+                            </span>
+                            </div>
+                        )}
+
+                        <Routes>
+                            <Route path="/"/>
+                            <Route path="/dialog" element={<Dialog/>}/>
+                        </Routes>
+                    </div>
+                </Router>
+            </>
+        );
+    }
+;
+
+export default App;
 
 const rootElement = document.getElementById("app")!;
 const root = createRoot(rootElement);
