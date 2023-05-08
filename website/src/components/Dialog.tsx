@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import axios from "axios";
 
 interface Message {
@@ -9,6 +9,13 @@ interface Message {
 const Dialog = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState("");
+    const dialogEndRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (dialogEndRef.current !== null) {
+            dialogEndRef.current.scrollIntoView({behavior: "smooth"});
+        }
+    }, [messages]);
 
     const handleMessageSubmit = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
@@ -58,6 +65,7 @@ const Dialog = () => {
                     </div>
                 ))}
             </div>
+            <div ref={dialogEndRef}/>
             <form onSubmit={handleMessageSubmit} className="fixed bottom-0 left-0 right-0 flex px-4 py-2">
                 <input
                     type="text"
