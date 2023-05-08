@@ -21,11 +21,10 @@ const Dialog = () => {
         event.preventDefault();
         if (inputText.trim() === "") return;
 
-        const message = {
+        const message: Message = {
             text: inputText,
             isUser: true,
         };
-
         messages.push(message)
         setInputText("");
 
@@ -52,13 +51,13 @@ const Dialog = () => {
     };
 
     return (
-        <div className={"mb-10 relative min-h-screen"}>
-            <div className="h-screen flex flex-col justify-end px-4 py-8 space-y-4 overflow-y-auto">
+        <div className="mb-10 relative min-h-screen bg-gray-300 overflow-auto">
+            <div className="h-screen flex flex-col justify-end px-4 py-8 space-y-4">
                 {messages.map((message, index) => (
                     <div
                         key={index}
                         className={`p-4 rounded-lg ${
-                            message.isUser ? 'bg-gray-300 self-end' : 'bg-blue-400 self-start'
+                            message.isUser ? 'bg-red-300 self-end' : 'bg-blue-400 self-start'
                         }`}
                     >
                         <p className="text-lg font-semibold">{message.text}</p>
@@ -66,7 +65,7 @@ const Dialog = () => {
                 ))}
             </div>
             <div ref={dialogEndRef}/>
-            <form onSubmit={handleMessageSubmit} className="fixed bottom-0 left-0 right-0 flex px-4 py-2">
+            <form onSubmit={handleMessageSubmit} className="fixed bottom-0 left-0 right-0 flex px-4 py-2 bg-gray-300">
                 <input
                     type="text"
                     value={inputText}

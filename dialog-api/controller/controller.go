@@ -59,3 +59,7 @@ func (receiver DialogController) AddDialog(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"answer": answer})
 }
+
+func (receiver DialogController) EndDialog(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"message": "dialog ended"})
+}

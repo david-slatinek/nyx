@@ -5,8 +5,17 @@ import {createRoot} from "react-dom/client";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import Header from "./components/Header";
 import Dialog from "./components/Dialog";
+import axios from "axios";
 
 const App = () => {
+        window.addEventListener("beforeunload", function (event) {
+            try {
+                axios.post("http://localhost:8080/end");
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
         const [error, setError] = useState("");
 
         fetch("http://localhost:8080/dialog", {
@@ -27,6 +36,7 @@ const App = () => {
                     <Header/>
                 </div>
 
+
                 <Router>
                     <div>
                         {error && (
@@ -40,8 +50,7 @@ const App = () => {
                         )}
 
                         <Routes>
-                            <Route path="/"/>
-                            <Route path="/dialog" element={<Dialog/>}/>
+                            <Route path="/" element={<Dialog/>}/>
                         </Routes>
                     </div>
                 </Router>
