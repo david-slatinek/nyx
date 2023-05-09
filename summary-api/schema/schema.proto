@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package schema;
+
+option go_package = "./";
+
+message SummaryRequest {
+  string text = 1;
+}
+
+message SummaryResponse {
+  string summary = 1;
+}
+
+service SummaryService {
+  rpc Summary(SummaryRequest) returns (SummaryResponse);
+}

@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"log"
+	"main/client"
 	"main/env"
 	"main/util"
 	"os"
@@ -42,6 +43,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get queue url: %v", err)
 	}
+
+	grpcClient, err := client.NewClient()
+	if err != nil {
+		log.Fatalf("failed to connect to grpc: %v", err)
+	}
+	defer func(client client.Client) {
+		if err := client.Close(); err != nil {
+			log.Printf("failed to close grpc: %v", err)
+		}
+	}(grpcClient)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
@@ -87,7 +98,12 @@ func main() {
 					goto loop
 				}
 
-				log.Printf("text: %s", text)
+				summary, err := grpcClient.GetSummary(text)
+				if err != nil {
+					log.Printf("failed to get summary: %v", err)
+					goto loop
+				}
+				log.Printf("summary: %s", summary)
 
 				_, err = svc.DeleteMessage(&sqs.DeleteMessageInput{
 					QueueUrl:      urlResult.QueueUrl,
