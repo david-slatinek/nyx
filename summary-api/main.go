@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	_ "github.com/go-kivik/couchdb/v3"
 	"log"
 	"main/client"
+	"main/db"
 	"main/env"
 	"main/util"
 	"os"
@@ -54,6 +57,19 @@ func main() {
 		}
 	}(grpcClient)
 
+	couchDB, err := db.NewCouchDB()
+	if err != nil {
+		log.Fatalf("failed to connect to db: %v", err)
+	}
+	defer func(client db.CouchDB) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := client.Close(ctx); err != nil {
+			log.Fatalf("failed to close db: %v", err)
+		}
+	}(couchDB)
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
 
@@ -87,12 +103,13 @@ func main() {
 					goto loop
 				}
 
-				if _, ok := dialogMap["dialogID"]; !ok {
+				var dialogID, ok = dialogMap["dialogID"]
+				if !ok {
 					log.Printf("failed to get dialogID: %v", err)
 					goto loop
 				}
 
-				text, err := util.GetDialogs(dialogMap["dialogID"])
+				text, err := util.GetDialogs(dialogID)
 				if err != nil {
 					log.Printf("failed to get dialogs: %v", err)
 					goto loop
@@ -103,7 +120,12 @@ func main() {
 					log.Printf("failed to get summary: %v", err)
 					goto loop
 				}
-				log.Printf("summary: %s", summary)
+
+				err = couchDB.AddSummary(dialogID, summary)
+				if err != nil {
+					log.Printf("failed to add summary: %v", err)
+					goto loop
+				}
 
 				_, err = svc.DeleteMessage(&sqs.DeleteMessageInput{
 					QueueUrl:      urlResult.QueueUrl,
@@ -113,6 +135,8 @@ func main() {
 				if err != nil {
 					log.Printf("failed to delete message: %v", err)
 				}
+
+				log.Printf("add summary\n")
 			}
 
 			time.Sleep(time.Second)
