@@ -65,7 +65,6 @@ func main() {
 
 	sess, err := session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
-		Profile:           "david",
 		Config: aws.Config{
 			CredentialsChainVerboseErrors: aws.Bool(true),
 		},
