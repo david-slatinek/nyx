@@ -101,3 +101,19 @@ func (receiver DialogController) EndDialog(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "dialog ended"})
 }
+
+func (receiver DialogController) GetDialog(ctx *gin.Context) {
+	dialogID := ctx.Param("id")
+
+	if len(dialogID) != 36 {
+		ctx.JSON(http.StatusBadRequest, model.Error{Error: "invalid dialog id, must be 36 characters long"})
+		return
+	}
+
+	dialogs, err := receiver.db.GetByDialogID(dialogID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, dialogs)
+}

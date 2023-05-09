@@ -37,7 +37,7 @@ func main() {
 		log.Fatalf("failed to connect to db: %v", err)
 	}
 	defer func(client db.CouchDB) {
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		if err := client.Close(ctx); err != nil {
@@ -83,6 +83,7 @@ func main() {
 	router.GET("/dialog", dialogController.DialogID)
 	router.POST("/dialog", dialogController.AddDialog)
 	router.POST("/end", dialogController.EndDialog)
+	router.GET("/dialog/:id", dialogController.GetDialog)
 
 	srv := &http.Server{
 		Addr:         ":8080",

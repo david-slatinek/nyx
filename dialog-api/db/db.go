@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"github.com/go-kivik/kivik/v3"
+	"log"
 	"main/model"
 	"os"
 	"time"
@@ -51,4 +52,41 @@ func (receiver CouchDB) AddDialog(dialog model.Dialog) error {
 
 	_, err := receiver.couchDB.Put(ctx, dialog.ID, dialog)
 	return err
+}
+
+func (receiver CouchDB) GetByDialogID(dialogID string) ([]model.Dialog, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	selector := map[string]interface{}{
+		"dialogID": dialogID,
+	}
+
+	rows, err := receiver.couchDB.Find(ctx, kivik.Options{
+		"selector": selector,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer func(rows *kivik.Rows) {
+		if err := rows.Close(); err != nil {
+			log.Printf("failed to close rows: %v", err)
+		}
+	}(rows)
+
+	var dialogs = make([]model.Dialog, 0)
+	for rows.Next() {
+		var dialog model.Dialog
+		if err := rows.ScanDoc(&dialog); err != nil {
+			log.Printf("failed to scan doc: %v", err)
+			continue
+		}
+		dialogs = append(dialogs, dialog)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return dialogs, nil
 }
