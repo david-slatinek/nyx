@@ -6,7 +6,7 @@ interface Message {
     isUser: boolean;
 }
 
-const Dialog = () => {
+const Dialog = (props: { url: string; }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState("");
     const dialogEndRef = useRef<HTMLDivElement | null>(null);
@@ -29,7 +29,7 @@ const Dialog = () => {
         setInputText("");
 
         try {
-            const response = await axios.post("http://localhost:8080/dialog",
+            const response = await axios.post(props.url + "/dialog",
                 {
                     text: message.text,
                     dialogID: sessionStorage.getItem("dialogID"),

@@ -9,9 +9,14 @@ import axios from "axios";
 import End from "./components/End";
 
 const App = () => {
+        let url = process.env.API_URL;
+        if (url === undefined) {
+            url = "http://localhost:8080";
+        }
+
         window.addEventListener("beforeunload", function (event) {
             try {
-                axios.post("http://localhost:8080/end", {
+                axios.post(url + "/end", {
                     text: "end",
                     dialogID: sessionStorage.getItem("dialogID"),
                 });
@@ -22,7 +27,7 @@ const App = () => {
 
         const [error, setError] = useState("");
 
-        fetch("http://localhost:8080/dialog", {
+        fetch(url + "/dialog", {
             method: "GET",
         })
             .then(response => response.json())
@@ -54,8 +59,8 @@ const App = () => {
                         )}
 
                         <Routes>
-                            <Route path="/" element={<Dialog/>}/>
-                            <Route path="/end" element={<End/>}/>
+                            <Route path="/" element={<Dialog url={url}/>}/>
+                            <Route path="/end" element={<End url={url}/>}/>
                         </Routes>
                     </div>
                 </Router>
