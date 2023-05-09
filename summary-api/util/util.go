@@ -36,10 +36,7 @@ func GetDialogs(dialogID string) (string, error) {
 
 	var dialogText string
 	for _, dialog := range dialogs {
-		dialogType := dialog["dialogType"]
-		text := dialog["text"]
-
-		dialogText += fmt.Sprintf("%s: %s\n", dialogType, text)
+		dialogText += fmt.Sprintf("%s: %s\n", dialog["dialogType"], dialog["text"])
 	}
 	return dialogText, nil
 }
