@@ -15,8 +15,8 @@ type Client struct {
 }
 
 func NewClient() (Client, error) {
-	conn, err := grpc.Dial(os.Getenv("SUMMARY_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil || conn == nil {
+	conn, err := grpc.Dial(os.Getenv("SUMMARY_URL")+":9050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
 		return Client{}, err
 	}
 	return Client{
@@ -36,5 +36,8 @@ func (receiver Client) GetSummary(text string) (string, error) {
 	answer, err := receiver.client.Summary(ctx, &pb.SummaryRequest{
 		Text: text,
 	})
-	return answer.Summary, err
+	if err != nil {
+		return "", err
+	}
+	return answer.Summary, nil
 }

@@ -17,7 +17,7 @@ type Client struct {
 
 func NewClient() (Client, error) {
 	conn, err := grpc.Dial(os.Getenv("DIALOG_URL")+":9080", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil || conn == nil {
+	if err != nil {
 		return Client{}, err
 	}
 	return Client{
@@ -37,5 +37,8 @@ func (receiver Client) GetAnswer(dialog model.Dialog) (string, error) {
 	answer, err := receiver.client.Dialog(ctx, &pb.DialogRequest{
 		Text: dialog.Text,
 	})
-	return answer.Answer, err
+	if err != nil {
+		return "", err
+	}
+	return answer.Answer, nil
 }
