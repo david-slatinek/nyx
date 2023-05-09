@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  summary-model:
+    build: .
+    ports:
+      - "9050:9050"
+    container_name: summary-model-con
+    hostname: summary-model-service
+    restart: unless-stopped
+    networks:
+      - nyx-network
+
+networks:
+  nyx-network:
+    name: nyx-network
+    driver: bridge
