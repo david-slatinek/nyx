@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-kivik/couchdb/v3"
 	"log"
@@ -60,7 +63,21 @@ func main() {
 		}
 	}(grpcClient)
 
-	dialogController := controller.NewDialogController(couchDB, grpcClient)
+	sess, err := session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+		Profile:           "david",
+		Config: aws.Config{
+			CredentialsChainVerboseErrors: aws.Bool(true),
+		},
+	})
+	if err != nil {
+		log.Fatalf("failed to create aws session: %v", err)
+	}
+
+	dialogController, err := controller.NewDialogController(couchDB, grpcClient, sqs.New(sess))
+	if err != nil {
+		log.Fatalf("failed to create dialog controller: %v", err)
+	}
 
 	router.GET("/user", dialogController.UserID)
 	router.GET("/dialog", dialogController.DialogID)

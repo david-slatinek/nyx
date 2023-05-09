@@ -9,6 +9,7 @@ import (
 )
 
 const UserID = "93cb8a64-97bc-4742-acba-a1fdbc543434"
+const QueueName = "summary-q"
 
 func GetDialog(ctx *gin.Context) (model.Dialog, error) {
 	var dialog model.Dialog

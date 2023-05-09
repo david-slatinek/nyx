@@ -1,6 +1,9 @@
 package controller
 
 import (
+	"encoding/json"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"main/client"
@@ -12,12 +15,26 @@ import (
 )
 
 type DialogController struct {
-	db     db.CouchDB
-	client client.Client
+	db       db.CouchDB
+	client   client.Client
+	svc      *sqs.SQS
+	queueURL string
 }
 
-func NewDialogController(db db.CouchDB, client client.Client) DialogController {
-	return DialogController{db: db, client: client}
+func NewDialogController(db db.CouchDB, client client.Client, svc *sqs.SQS) (DialogController, error) {
+	result, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: aws.String(util.QueueName),
+	})
+	if err != nil {
+		return DialogController{}, err
+	}
+
+	return DialogController{
+		db:       db,
+		client:   client,
+		svc:      svc,
+		queueURL: *result.QueueUrl,
+	}, nil
 }
 
 func (receiver DialogController) UserID(ctx *gin.Context) {
@@ -61,5 +78,26 @@ func (receiver DialogController) AddDialog(ctx *gin.Context) {
 }
 
 func (receiver DialogController) EndDialog(ctx *gin.Context) {
+	dialog, err := util.GetDialog(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, model.Error{Error: err.Error()})
+		return
+	}
+
+	jsonString, err := json.Marshal(gin.H{"dialogID": dialog.DialogID})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
+
+	_, err = receiver.svc.SendMessage(&sqs.SendMessageInput{
+		MessageBody: aws.String(string(jsonString)),
+		QueueUrl:    aws.String(receiver.queueURL),
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "dialog ended"})
 }
