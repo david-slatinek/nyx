@@ -11,6 +11,7 @@ import (
 	"main/model"
 	"main/util"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -115,5 +116,8 @@ func (receiver DialogController) GetDialog(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
 		return
 	}
+	sort.Slice(dialogs, func(i, j int) bool {
+		return dialogs[i].Timestamp.Before(dialogs[j].Timestamp)
+	})
 	ctx.JSON(http.StatusOK, dialogs)
 }

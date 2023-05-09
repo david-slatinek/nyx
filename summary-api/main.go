@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"log"
+	"main/env"
+	"main/util"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,6 +18,11 @@ import (
 const QueueName = "summary-q"
 
 func main() {
+	err := env.Load("env/.env")
+	if err != nil {
+		log.Fatalf("failed to load env: %v", err)
+	}
+
 	sess, err := session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 		Profile:           "david",
@@ -40,6 +48,7 @@ func main() {
 
 	go func() {
 		for {
+		loop:
 			select {
 			case <-c:
 				return
@@ -52,22 +61,42 @@ func main() {
 				MaxNumberOfMessages: aws.Int64(1),
 			})
 
-			if err == nil {
-				if len(msgResult.Messages) > 0 {
-					msg := msgResult.Messages[0]
-					log.Printf("message: %v", *msg.Body)
-
-					_, err := svc.DeleteMessage(&sqs.DeleteMessageInput{
-						QueueUrl:      urlResult.QueueUrl,
-						ReceiptHandle: msg.ReceiptHandle,
-					})
-
-					if err != nil {
-						log.Printf("failed to delete message: %v", err)
-					}
-				}
-			} else {
+			if err != nil {
 				log.Printf("failed to receive message: %v", err)
+				goto loop
+			}
+
+			if len(msgResult.Messages) > 0 {
+				msg := msgResult.Messages[0]
+				log.Printf("message: %v", *msg.Body)
+
+				dialogMap := map[string]string{}
+				if err := json.Unmarshal([]byte(*msg.Body), &dialogMap); err != nil {
+					log.Printf("failed to unmarshal message: %v", err)
+					goto loop
+				}
+
+				if _, ok := dialogMap["dialogID"]; !ok {
+					log.Printf("failed to get dialogID: %v", err)
+					goto loop
+				}
+
+				text, err := util.GetDialogs(dialogMap["dialogID"])
+				if err != nil {
+					log.Printf("failed to get dialogs: %v", err)
+					goto loop
+				}
+
+				log.Printf("text: %s", text)
+
+				_, err = svc.DeleteMessage(&sqs.DeleteMessageInput{
+					QueueUrl:      urlResult.QueueUrl,
+					ReceiptHandle: msg.ReceiptHandle,
+				})
+
+				if err != nil {
+					log.Printf("failed to delete message: %v", err)
+				}
 			}
 
 			time.Sleep(time.Second)
