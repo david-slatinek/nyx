@@ -20,6 +20,7 @@ import (
 )
 
 const QueueName = "summary-q"
+const RecommendQueueName = "recommend-q"
 
 func main() {
 	err := env.Load("env/.env")
@@ -43,7 +44,14 @@ func main() {
 		QueueName: aws.String(QueueName),
 	})
 	if err != nil {
-		log.Fatalf("failed to get queue url: %v", err)
+		log.Fatalf("failed to get %s queue url: %v", QueueName, err)
+	}
+
+	recommendUrlResult, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: aws.String(RecommendQueueName),
+	})
+	if err != nil {
+		log.Fatalf("failed to get %s queue url: %v", RecommendQueueName, err)
 	}
 
 	grpcClient, err := client.NewClient()
@@ -125,6 +133,26 @@ func main() {
 					log.Printf("failed to add summary: %v", err)
 					goto loop
 				}
+				log.Printf("add summary to db\n")
+
+				jsonString, err := json.Marshal(map[string]string{
+					"dialogID": dialogID,
+					"summary":  summary,
+				})
+				if err != nil {
+					log.Printf("failed to marshal recommend content: %v", err)
+				}
+
+				_, err = svc.SendMessage(&sqs.SendMessageInput{
+					MessageBody: aws.String(string(jsonString)),
+					QueueUrl:    recommendUrlResult.QueueUrl,
+				})
+				if err != nil {
+					log.Printf("failed to send message: %v", err)
+					goto loop
+				}
+
+				log.Printf("send message to %s queue\n", RecommendQueueName)
 
 				_, err = svc.DeleteMessage(&sqs.DeleteMessageInput{
 					QueueUrl:      urlResult.QueueUrl,
@@ -134,8 +162,7 @@ func main() {
 				if err != nil {
 					log.Printf("failed to delete message: %v", err)
 				}
-
-				log.Printf("add summary\n")
+				log.Printf("delete message from %s queue\n", QueueName)
 			}
 
 			time.Sleep(time.Second)
