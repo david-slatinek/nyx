@@ -52,6 +52,7 @@ func main() {
 	categoryController := controller.NewCategoryController(couchDB)
 
 	router.POST("/category", categoryController.AddCategory)
+	router.GET("/category/:id", categoryController.GetCategory)
 
 	srv := &http.Server{
 		Addr:         ":8050",

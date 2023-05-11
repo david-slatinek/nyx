@@ -74,7 +74,7 @@ func (receiver CouchDB) GetByDialogID(dialogID string) ([]model.Dialog, error) {
 		}
 	}(rows)
 
-	var dialogs = make([]model.Dialog, 0)
+	var dialogs = make([]model.Dialog, 0, 10)
 	for rows.Next() {
 		var dialog model.Dialog
 		if err := rows.ScanDoc(&dialog); err != nil {

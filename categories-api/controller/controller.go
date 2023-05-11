@@ -44,3 +44,19 @@ func (receiver CategoryController) AddCategory(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusCreated, category)
 }
+
+func (receiver CategoryController) GetCategory(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if len(id) != 36 {
+		ctx.JSON(http.StatusBadRequest, model.Error{Error: "invalid category id, must be 36 characters long"})
+		return
+	}
+
+	category, err := receiver.db.GetCategory(id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, category)
+}

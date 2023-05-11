@@ -52,3 +52,20 @@ func (receiver CouchDB) AddCategory(category model.Category) error {
 	_, err := receiver.couchDB.Put(ctx, category.ID, category)
 	return err
 }
+
+func (receiver CouchDB) GetCategory(id string) (model.Category, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	row := receiver.couchDB.Get(ctx, id)
+
+	if row.Err != nil {
+		return model.Category{}, row.Err
+	}
+
+	var category model.Category
+	if err := row.ScanDoc(&category); err != nil {
+		return model.Category{}, err
+	}
+	return category, nil
+}
