@@ -27,10 +27,10 @@ func NewCache() Cache {
 	return gc
 }
 
-func (receiver Cache) Set(key string, value interface{}) error {
+func (receiver Cache) Set(key string, value any) error {
 	return receiver.cache.Set(key, value)
 }
 
-func (receiver Cache) Get(key string) (interface{}, error) {
+func (receiver Cache) Get(key string) (any, error) {
 	return receiver.cache.Get(key)
 }

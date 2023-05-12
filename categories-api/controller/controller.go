@@ -97,6 +97,5 @@ func (receiver CategoryController) GetCategories(ctx *gin.Context) {
 	if err := receiver.cache.Set("all", categories); err != nil {
 		log.Printf("error setting cache: %s", err.Error())
 	}
-
 	ctx.JSON(http.StatusOK, categories)
 }
