@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"github.com/go-kivik/kivik/v3"
+	"log"
 	"main/model"
 	"os"
 	"time"
@@ -68,4 +69,33 @@ func (receiver CouchDB) GetCategory(id string) (model.Category, error) {
 		return model.Category{}, err
 	}
 	return category, nil
+}
+
+func (receiver CouchDB) GetCategories() ([]model.Category, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := receiver.couchDB.AllDocs(ctx, kivik.Options{"include_docs": true})
+	if err != nil {
+		return nil, err
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	defer func(rows *kivik.Rows) {
+		if err := rows.Close(); err != nil {
+			log.Printf("failed to close rows: %v", err)
+		}
+	}(rows)
+
+	var categories []model.Category
+	for rows.Next() {
+		var category model.Category
+		if err := rows.ScanDoc(&category); err != nil {
+			continue
+		}
+		categories = append(categories, category)
+	}
+	return categories, nil
 }

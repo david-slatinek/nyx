@@ -41,6 +41,8 @@ func main() {
 		}
 	}(couchDB)
 
+	categoryController := controller.NewCategoryController(couchDB)
+
 	router := gin.Default()
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, model.Error{Error: "not found"})
@@ -49,10 +51,9 @@ func main() {
 		c.JSON(http.StatusMethodNotAllowed, model.Error{Error: "method not allowed"})
 	})
 
-	categoryController := controller.NewCategoryController(couchDB)
-
 	router.POST("/category", categoryController.AddCategory)
 	router.GET("/category/:id", categoryController.GetCategory)
+	router.GET("/categories", categoryController.GetCategories)
 
 	srv := &http.Server{
 		Addr:         ":8050",

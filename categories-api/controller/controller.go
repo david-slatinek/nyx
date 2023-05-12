@@ -60,3 +60,12 @@ func (receiver CategoryController) GetCategory(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, category)
 }
+
+func (receiver CategoryController) GetCategories(ctx *gin.Context) {
+	categories, err := receiver.db.GetCategories()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, categories)
+}
