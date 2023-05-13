@@ -121,3 +121,12 @@ func (receiver DialogController) GetDialog(ctx *gin.Context) {
 	})
 	ctx.JSON(http.StatusOK, dialogs)
 }
+
+func (receiver DialogController) GetDialogs(ctx *gin.Context) {
+	dialogs, err := receiver.db.GetAll()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, dialogs)
+}
