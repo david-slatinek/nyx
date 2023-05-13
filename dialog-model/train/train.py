@@ -45,7 +45,7 @@ if __name__ == "__main__":
     num_epochs = 1
     block_size = 1
 
-    dataset = TextDataset(tokenizer, file_path="train.txt", block_size=block_size)
+    dataset = TextDataset(tokenizer, file_path="../data/train.txt", block_size=block_size)
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -67,7 +67,7 @@ if __name__ == "__main__":
                 loss.backward()
                 optimizer.step()
 
-        test_dataset = TextDataset(tokenizer, file_path="test.txt", block_size=block_size)
+        test_dataset = TextDataset(tokenizer, file_path="../data/test.txt", block_size=block_size)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
         eval_loss = evaluate(model, test_loader)

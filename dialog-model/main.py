@@ -14,7 +14,7 @@ class DialogServiceServicer(pb2_grpc.DialogServiceServicer):
 
         inputs = tokenizer(question, return_tensors="pt")
         reply_ids = model.generate(**inputs, max_new_tokens=100)
-        answer = tokenizer.decode(reply_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+        answer = tokenizer.decode(reply_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False).strip()
 
         print(f"Answer: {answer}")
 
