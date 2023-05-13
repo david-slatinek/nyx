@@ -1,8 +1,9 @@
-import os
+from datetime import datetime
 
+import mlflow
 import torch
-from torch.utils.data import Dataset, DataLoader
-from transformers import BartTokenizer, AdamW, BartForConditionalGeneration, TrainingArguments, Trainer
+from torch.utils.data import DataLoader, Dataset
+from transformers import AdamW, BartForConditionalGeneration, BartTokenizer
 
 
 # Define the dataset
@@ -33,6 +34,8 @@ def evaluate(model, eval_loader):
 
 
 if __name__ == "__main__":
+    mlflow.sklearn.autolog()
+
     # Initialize the tokenizer and model
     tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
     model = BartForConditionalGeneration.from_pretrained('facebook/bart-large')
@@ -51,16 +54,33 @@ if __name__ == "__main__":
     dataset = TextDataset(tokenizer, file_path="train.txt", block_size=block_size)
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    # Train the model
-    for epoch in range(num_epochs):
-        for batch in train_loader:
-            optimizer.zero_grad()
-            loss = model(input_ids=batch, labels=batch)[0]
-            loss.backward()
-            optimizer.step()
+    start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with mlflow.start_run(description=f"Training on {start}") as run:
+        mlflow.log_params(model.config.__dict__)
 
-    test_dataset = TextDataset(tokenizer, file_path="test.txt", block_size=block_size)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+        mlflow.log_param("batch_size", batch_size)
+        mlflow.log_param("num_epochs", num_epochs)
+        mlflow.log_param("block_size", block_size)
 
-    eval_loss = evaluate(model, test_loader)
-    print(f"Evaluation loss: {eval_loss:.4f}")
+        mlflow.log_param("model_name", "facebook/bart-large")
+        mlflow.log_param("optimizer", "AdamW")
+        mlflow.log_param("learning_rate", 1e-5)
+        mlflow.set_tag("start", start)
+
+        # Train the model
+        for epoch in range(num_epochs):
+            for batch in train_loader:
+                optimizer.zero_grad()
+                loss = model(input_ids=batch, labels=batch)[0]
+                loss.backward()
+                optimizer.step()
+
+        test_dataset = TextDataset(tokenizer, file_path="test.txt", block_size=block_size)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
+        eval_loss = evaluate(model, test_loader)
+        print(f"Evaluation loss: {eval_loss:.4f}")
+
+        mlflow.log_metric("eval_loss", eval_loss)
+
+        mlflow.set_tag("end", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
