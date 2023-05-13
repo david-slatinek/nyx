@@ -58,10 +58,11 @@ func (receiver Client) GetRecommendation(summary string, dialogs []model.Dialog,
 	}
 
 	var recommendResult []model.RecommendResult
-	for key, value := range recommendResponse.Labels {
+	for _, value := range recommendResponse.Responses {
 		recommendResult = append(recommendResult, model.RecommendResult{
-			Label: value,
-			Score: recommendResponse.Scores[key],
+			Dialog: value.Dialog,
+			Labels: value.Labels,
+			Scores: value.Scores,
 		})
 	}
 	return recommendResult, nil

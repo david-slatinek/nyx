@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RecommendServiceClient interface {
-	Recommend(ctx context.Context, in *RecommendRequest, opts ...grpc.CallOption) (*RecommendResponse, error)
+	Recommend(ctx context.Context, in *RecommendRequest, opts ...grpc.CallOption) (*RecommendResponseList, error)
 }
 
 type recommendServiceClient struct {
@@ -37,8 +37,8 @@ func NewRecommendServiceClient(cc grpc.ClientConnInterface) RecommendServiceClie
 	return &recommendServiceClient{cc}
 }
 
-func (c *recommendServiceClient) Recommend(ctx context.Context, in *RecommendRequest, opts ...grpc.CallOption) (*RecommendResponse, error) {
-	out := new(RecommendResponse)
+func (c *recommendServiceClient) Recommend(ctx context.Context, in *RecommendRequest, opts ...grpc.CallOption) (*RecommendResponseList, error) {
+	out := new(RecommendResponseList)
 	err := c.cc.Invoke(ctx, RecommendService_Recommend_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (c *recommendServiceClient) Recommend(ctx context.Context, in *RecommendReq
 // All implementations must embed UnimplementedRecommendServiceServer
 // for forward compatibility
 type RecommendServiceServer interface {
-	Recommend(context.Context, *RecommendRequest) (*RecommendResponse, error)
+	Recommend(context.Context, *RecommendRequest) (*RecommendResponseList, error)
 	mustEmbedUnimplementedRecommendServiceServer()
 }
 
@@ -58,7 +58,7 @@ type RecommendServiceServer interface {
 type UnimplementedRecommendServiceServer struct {
 }
 
-func (UnimplementedRecommendServiceServer) Recommend(context.Context, *RecommendRequest) (*RecommendResponse, error) {
+func (UnimplementedRecommendServiceServer) Recommend(context.Context, *RecommendRequest) (*RecommendResponseList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Recommend not implemented")
 }
 func (UnimplementedRecommendServiceServer) mustEmbedUnimplementedRecommendServiceServer() {}

@@ -1,6 +1,7 @@
 package model
 
 type RecommendResult struct {
-	Label string  `json:"label"`
-	Score float32 `json:"score"`
+	Dialog string    `json:"dialog"`
+	Labels []string  `json:"labels"`
+	Scores []float32 `json:"scores"`
 }

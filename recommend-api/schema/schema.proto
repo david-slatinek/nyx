@@ -11,10 +11,15 @@ message RecommendRequest {
 }
 
 message RecommendResponse {
-  repeated string labels = 1;
-  repeated float scores = 2;
+  string dialog = 1;
+  repeated string labels = 2;
+  repeated float scores = 3;
+}
+
+message RecommendResponseList {
+  repeated RecommendResponse responses = 1;
 }
 
 service RecommendService {
-  rpc Recommend(RecommendRequest) returns (RecommendResponse);
+  rpc Recommend(RecommendRequest) returns (RecommendResponseList);
 }
