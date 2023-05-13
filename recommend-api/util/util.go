@@ -16,3 +16,24 @@ func GetDialogs(dialogID string) ([]model.Dialog, error) {
 	err = resp.JSON(&dialogs)
 	return dialogs, err
 }
+
+func GetCategories() ([]model.Category, error) {
+	resp, err := grequests.Get(os.Getenv("CATEGORY_URL")+"/categories", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var categories []model.Category
+	err = resp.JSON(&categories)
+	return categories, err
+}
+
+func GetCategoriesNames(category []model.Category, categories *[]string) {
+	for i := range category {
+		*categories = append(*categories, category[i].Name)
+
+		if category[i].Subcategories != nil {
+			GetCategoriesNames(category[i].Subcategories, categories)
+		}
+	}
+}

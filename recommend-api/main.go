@@ -20,10 +20,19 @@ func main() {
 	}
 
 	dialogs, err := util.GetDialogs(recommend.DialogID)
+	//_, err = util.GetDialogs(recommend.DialogID)
 	if err != nil {
 		log.Fatalf("failed to get dialogs: %v", err)
 	}
-	log.Printf("dialogs: %v", dialogs)
+
+	categories, err := util.GetCategories()
+	if err != nil {
+		log.Fatalf("failed to get categories: %v", err)
+	}
+
+	//var categoriesText = make([]string, 0, len(categories))
+	//util.GetCategoriesNames(categories, &categoriesText)
+	//log.Printf("categoriesText: %v", categoriesText)
 
 	rClient, err := client.NewClient()
 	if err != nil {
@@ -35,7 +44,7 @@ func main() {
 		}
 	}(rClient)
 
-	recommendResult, err := rClient.GetRecommendation(recommend)
+	recommendResult, err := rClient.GetRecommendation(recommend.Summary, dialogs, categories)
 	if err != nil {
 		log.Fatalf("failed to get recommendation: %v", err)
 	}

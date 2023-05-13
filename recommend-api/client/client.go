@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"main/model"
 	pb "main/schema"
+	"main/util"
 	"os"
 	"time"
 )
@@ -30,13 +31,22 @@ func (receiver Client) Close() error {
 	return receiver.connection.Close()
 }
 
-func (receiver Client) GetRecommendation(recommend model.Recommend) ([]model.RecommendResult, error) {
+func (receiver Client) GetRecommendation(summary string, dialogs []model.Dialog, categories []model.Category) ([]model.RecommendResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	var dialogsText = make([]string, len(dialogs))
+	for key, dialog := range dialogs {
+		dialogsText[key] = dialog.Text
+	}
+
+	var categoriesText = make([]string, 0, len(categories))
+	util.GetCategoriesNames(categories, &categoriesText)
+
 	recommendResponse, err := receiver.client.Recommend(ctx, &pb.RecommendRequest{
-		DialogId: recommend.DialogID,
-		Summary:  recommend.Summary,
+		Dialogs:    dialogsText,
+		Summary:    summary,
+		Categories: categoriesText,
 	})
 	if err != nil {
 		return nil, err
