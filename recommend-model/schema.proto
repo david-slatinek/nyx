@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package schema;
+
+option go_package = "./";
+
+message RecommendRequest {
+  repeated string dialogs = 1;
+  string summary = 2;
+  repeated string categories = 3;
+}
+
+message RecommendResponse {
+  string dialog = 1;
+  repeated string labels = 2;
+  repeated float scores = 3;
+}
+
+message RecommendResponseList {
+  repeated RecommendResponse responses = 1;
+}
+
+service RecommendService {
+  rpc Recommend(RecommendRequest) returns (RecommendResponseList);
+}
