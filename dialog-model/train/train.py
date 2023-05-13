@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader, Dataset
 from transformers import AdamW, BartForConditionalGeneration, BartTokenizer
 
 
-# Define the dataset
 class TextDataset(Dataset):
     def __init__(self, tokenizer, file_path, block_size):
         self.examples = []
@@ -36,21 +35,16 @@ def evaluate(model, eval_loader):
 if __name__ == "__main__":
     mlflow.sklearn.autolog()
 
-    # Initialize the tokenizer and model
-    tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
-    model = BartForConditionalGeneration.from_pretrained('facebook/bart-large')
+    model_name = "facebook/bart-large"
+    tokenizer = BartTokenizer.from_pretrained(model_name)
+    model = BartForConditionalGeneration.from_pretrained(model_name)
 
-    # Initialize the optimizer and set the learning rate
-    optimizer = AdamW(model.parameters(), lr=1e-5)
+    optimizer = AdamW(model.parameters())
 
-    # Set the batch size and number of training epochs
     batch_size = 1
     num_epochs = 1
-
-    # Set the file path and block size for the dataset
     block_size = 1
 
-    # Initialize the dataset and data loader
     dataset = TextDataset(tokenizer, file_path="train.txt", block_size=block_size)
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
@@ -62,12 +56,10 @@ if __name__ == "__main__":
         mlflow.log_param("num_epochs", num_epochs)
         mlflow.log_param("block_size", block_size)
 
-        mlflow.log_param("model_name", "facebook/bart-large")
+        mlflow.log_param("model_name", model_name)
         mlflow.log_param("optimizer", "AdamW")
-        mlflow.log_param("learning_rate", 1e-5)
         mlflow.set_tag("start", start)
 
-        # Train the model
         for epoch in range(num_epochs):
             for batch in train_loader:
                 optimizer.zero_grad()
