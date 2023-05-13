@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"main/client"
 	"main/env"
 	"main/model"
 	"main/util"
@@ -23,4 +24,20 @@ func main() {
 		log.Fatalf("failed to get dialogs: %v", err)
 	}
 	log.Printf("dialogs: %v", dialogs)
+
+	rClient, err := client.NewClient()
+	if err != nil {
+		log.Fatalf("failed to create client: %v", err)
+	}
+	defer func(rClient client.Client) {
+		if err := rClient.Close(); err != nil {
+			log.Printf("failed to close client: %v", err)
+		}
+	}(rClient)
+
+	recommendResult, err := rClient.GetRecommendation(recommend)
+	if err != nil {
+		log.Fatalf("failed to get recommendation: %v", err)
+	}
+	log.Printf("recommendResult: %v", recommendResult)
 }
