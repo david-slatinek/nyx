@@ -35,9 +35,14 @@ func (receiver Client) GetRecommendation(summary string, dialogs []model.Dialog,
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var dialogsText = make([]string, len(dialogs))
-	for key, dialog := range dialogs {
-		dialogsText[key] = dialog.Text
+	var dialogsMap = make(map[string]bool, len(dialogs))
+	for _, dialog := range dialogs {
+		dialogsMap[dialog.Text] = true
+	}
+
+	var dialogsText = make([]string, 0, len(dialogs))
+	for key := range dialogsMap {
+		dialogsText = append(dialogsText, key)
 	}
 
 	var categoriesText = make([]string, 0, len(categories))
