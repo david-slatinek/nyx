@@ -30,6 +30,17 @@ class RecommendServiceServicer(pb2_grpc.RecommendServiceServicer):
             responses=res
         )
 
+    def RecommendSummary(self, request, context):
+        categories = request.categories
+
+        res = classifier(request.summary, categories, multi_label=True)
+
+        return pb2.RecommendResponse(
+            text=request.summary,
+            labels=res["labels"],
+            scores=res["scores"]
+        )
+
 
 if __name__ == "__main__":
     classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")

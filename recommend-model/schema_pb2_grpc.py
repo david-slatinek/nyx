@@ -22,7 +22,7 @@ class RecommendServiceStub(object):
         self.RecommendSummary = channel.unary_unary(
                 '/schema.RecommendService/RecommendSummary',
                 request_serializer=schema__pb2.RecommendRequestSummary.SerializeToString,
-                response_deserializer=schema__pb2.RecommendResponseList.FromString,
+                response_deserializer=schema__pb2.RecommendResponse.FromString,
                 )
 
 
@@ -52,7 +52,7 @@ def add_RecommendServiceServicer_to_server(servicer, server):
             'RecommendSummary': grpc.unary_unary_rpc_method_handler(
                     servicer.RecommendSummary,
                     request_deserializer=schema__pb2.RecommendRequestSummary.FromString,
-                    response_serializer=schema__pb2.RecommendResponseList.SerializeToString,
+                    response_serializer=schema__pb2.RecommendResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -94,6 +94,6 @@ class RecommendService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/schema.RecommendService/RecommendSummary',
             schema__pb2.RecommendRequestSummary.SerializeToString,
-            schema__pb2.RecommendResponseList.FromString,
+            schema__pb2.RecommendResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

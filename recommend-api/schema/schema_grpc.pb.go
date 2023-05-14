@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RecommendServiceClient interface {
 	RecommendDialog(ctx context.Context, in *RecommendRequestDialog, opts ...grpc.CallOption) (*RecommendResponseList, error)
-	RecommendSummary(ctx context.Context, in *RecommendRequestSummary, opts ...grpc.CallOption) (*RecommendResponseList, error)
+	RecommendSummary(ctx context.Context, in *RecommendRequestSummary, opts ...grpc.CallOption) (*RecommendResponse, error)
 }
 
 type recommendServiceClient struct {
@@ -48,8 +48,8 @@ func (c *recommendServiceClient) RecommendDialog(ctx context.Context, in *Recomm
 	return out, nil
 }
 
-func (c *recommendServiceClient) RecommendSummary(ctx context.Context, in *RecommendRequestSummary, opts ...grpc.CallOption) (*RecommendResponseList, error) {
-	out := new(RecommendResponseList)
+func (c *recommendServiceClient) RecommendSummary(ctx context.Context, in *RecommendRequestSummary, opts ...grpc.CallOption) (*RecommendResponse, error) {
+	out := new(RecommendResponse)
 	err := c.cc.Invoke(ctx, RecommendService_RecommendSummary_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (c *recommendServiceClient) RecommendSummary(ctx context.Context, in *Recom
 // for forward compatibility
 type RecommendServiceServer interface {
 	RecommendDialog(context.Context, *RecommendRequestDialog) (*RecommendResponseList, error)
-	RecommendSummary(context.Context, *RecommendRequestSummary) (*RecommendResponseList, error)
+	RecommendSummary(context.Context, *RecommendRequestSummary) (*RecommendResponse, error)
 	mustEmbedUnimplementedRecommendServiceServer()
 }
 
@@ -73,7 +73,7 @@ type UnimplementedRecommendServiceServer struct {
 func (UnimplementedRecommendServiceServer) RecommendDialog(context.Context, *RecommendRequestDialog) (*RecommendResponseList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecommendDialog not implemented")
 }
-func (UnimplementedRecommendServiceServer) RecommendSummary(context.Context, *RecommendRequestSummary) (*RecommendResponseList, error) {
+func (UnimplementedRecommendServiceServer) RecommendSummary(context.Context, *RecommendRequestSummary) (*RecommendResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecommendSummary not implemented")
 }
 func (UnimplementedRecommendServiceServer) mustEmbedUnimplementedRecommendServiceServer() {}

@@ -26,5 +26,5 @@ message RecommendResponseList {
 
 service RecommendService {
   rpc RecommendDialog(RecommendRequestDialog) returns (RecommendResponseList);
-  rpc RecommendSummary(RecommendRequestSummary) returns (RecommendResponseList);
+  rpc RecommendSummary(RecommendRequestSummary) returns (RecommendResponse);
 }

@@ -6,7 +6,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"main/model"
 	pb "main/schema"
-	"main/util"
 	"os"
 	"time"
 )
@@ -31,7 +30,7 @@ func (receiver Client) Close() error {
 	return receiver.connection.Close()
 }
 
-func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categories []model.Category) ([]model.RecommendResult, error) {
+func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categoriesText []string) ([]model.RecommendResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -44,9 +43,6 @@ func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categori
 	for key := range dialogsMap {
 		dialogsText = append(dialogsText, key)
 	}
-
-	var categoriesText = make([]string, 0, len(categories))
-	util.GetCategoriesNames(categories, &categoriesText)
 
 	recommendResponse, err := receiver.client.RecommendDialog(ctx, &pb.RecommendRequestDialog{
 		Dialogs:    dialogsText,
@@ -66,4 +62,24 @@ func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categori
 		})
 	}
 	return recommendResult, nil
+}
+
+func (receiver Client) GetRecommendationSummary(summary model.Recommend, categoriesText []string) (model.RecommendResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	recommendResponse, err := receiver.client.RecommendSummary(ctx, &pb.RecommendRequestSummary{
+		Summary:    summary.Summary,
+		Categories: categoriesText,
+	})
+	if err != nil {
+		return model.RecommendResult{}, err
+	}
+
+	return model.RecommendResult{
+		ID:     summary.DialogID,
+		Dialog: recommendResponse.Text,
+		Labels: recommendResponse.Labels,
+		Scores: recommendResponse.Scores,
+	}, nil
 }
