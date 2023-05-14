@@ -58,10 +58,9 @@ func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categori
 		for i := range value.Scores {
 			if value.Scores[i] > 0.1 {
 				recommendResult = append(recommendResult, model.Recommendation{
-					ID:     dialogsMap[value.Text],
-					Dialog: value.Text,
-					Label:  value.Labels[i],
-					Score:  value.Scores[i],
+					ID:    dialogsMap[value.Text],
+					Label: value.Labels[i],
+					Score: value.Scores[i],
 				})
 			}
 		}
@@ -87,7 +86,7 @@ func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categori
 	return recommendResult, nil
 }
 
-func (receiver Client) GetRecommendationSummary(summary model.Recommend, categoriesText []string) (model.RecommendResult, error) {
+func (receiver Client) GetRecommendationSummary(summary model.Recommend, categoriesText []string) ([]model.Recommendation, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -96,23 +95,22 @@ func (receiver Client) GetRecommendationSummary(summary model.Recommend, categor
 		Categories: categoriesText,
 	})
 	if err != nil {
-		return model.RecommendResult{}, err
+		return nil, err
 	}
 
-	recommend := model.RecommendResult{
-		ID:     summary.DialogID,
-		Dialog: recommendResponse.Text,
-	}
-
+	var recommendResult []model.Recommendation
 	for i := range recommendResponse.Scores {
 		if recommendResponse.Scores[i] > 0.1 {
-			recommend.Labels = append(recommend.Labels, recommendResponse.Labels[i])
-			recommend.Scores = append(recommend.Scores, recommendResponse.Scores[i])
+			recommendResult = append(recommendResult, model.Recommendation{
+				ID:    summary.DialogID,
+				Label: recommendResponse.Labels[i],
+				Score: recommendResponse.Scores[i],
+			})
 		}
 	}
 
-	sort.Slice(recommend.Scores, func(i, j int) bool {
-		return recommend.Scores[i] > recommend.Scores[j]
+	sort.Slice(recommendResult, func(i, j int) bool {
+		return recommendResult[i].Score > recommendResult[j].Score
 	})
-	return recommend, nil
+	return recommendResult, nil
 }

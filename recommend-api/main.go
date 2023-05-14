@@ -5,6 +5,7 @@ import (
 	"main/client"
 	"main/env"
 	"main/model"
+	"main/queue"
 	"main/util"
 )
 
@@ -18,6 +19,11 @@ func main() {
 		ID:       "c3c27bd5-22ee-4c25-9f32-b8f5d0bedf40",
 		DialogID: "86ce24c7-8108-4d2f-86fe-a687f246c0d6",
 		Summary:  "Sarah is in her early twenties and doesn't know what to do with herself. She doesn't have any siblings. She is not sure if she has any plans for the future. She's not sure what her name is. She's called Sarah.",
+	}
+
+	emailQueue, err := queue.NewQueue("email-q")
+	if err != nil {
+		log.Fatalf("failed to create email queue: %v", err)
 	}
 
 	dialogs, err := util.GetDialogs(recommend.DialogID)
@@ -49,9 +55,19 @@ func main() {
 	}
 	log.Printf("recommendResult: %v", recommendResult)
 
+	err = emailQueue.Send(recommendResult)
+	if err != nil {
+		log.Printf("failed to send to queue: %v", err)
+	}
+
 	recommendResultSummary, err := rClient.GetRecommendationSummary(recommend, categoriesText)
 	if err != nil {
 		log.Fatalf("failed to get recommendation for summary: %v", err)
 	}
-	log.Printf("recommendResult: %v", recommendResultSummary)
+	log.Printf("recommendResultSummary: %v", recommendResultSummary)
+
+	err = emailQueue.Send(recommendResultSummary)
+	if err != nil {
+		log.Printf("failed to send to queue: %v", err)
+	}
 }
