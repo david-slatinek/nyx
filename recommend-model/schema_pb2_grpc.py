@@ -14,9 +14,14 @@ class RecommendServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Recommend = channel.unary_unary(
-                '/schema.RecommendService/Recommend',
-                request_serializer=schema__pb2.RecommendRequest.SerializeToString,
+        self.RecommendDialog = channel.unary_unary(
+                '/schema.RecommendService/RecommendDialog',
+                request_serializer=schema__pb2.RecommendRequestDialog.SerializeToString,
+                response_deserializer=schema__pb2.RecommendResponseList.FromString,
+                )
+        self.RecommendSummary = channel.unary_unary(
+                '/schema.RecommendService/RecommendSummary',
+                request_serializer=schema__pb2.RecommendRequestSummary.SerializeToString,
                 response_deserializer=schema__pb2.RecommendResponseList.FromString,
                 )
 
@@ -24,7 +29,13 @@ class RecommendServiceStub(object):
 class RecommendServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def Recommend(self, request, context):
+    def RecommendDialog(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RecommendSummary(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -33,9 +44,14 @@ class RecommendServiceServicer(object):
 
 def add_RecommendServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Recommend': grpc.unary_unary_rpc_method_handler(
-                    servicer.Recommend,
-                    request_deserializer=schema__pb2.RecommendRequest.FromString,
+            'RecommendDialog': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecommendDialog,
+                    request_deserializer=schema__pb2.RecommendRequestDialog.FromString,
+                    response_serializer=schema__pb2.RecommendResponseList.SerializeToString,
+            ),
+            'RecommendSummary': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecommendSummary,
+                    request_deserializer=schema__pb2.RecommendRequestSummary.FromString,
                     response_serializer=schema__pb2.RecommendResponseList.SerializeToString,
             ),
     }
@@ -49,7 +65,7 @@ class RecommendService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def Recommend(request,
+    def RecommendDialog(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +75,25 @@ class RecommendService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/schema.RecommendService/Recommend',
-            schema__pb2.RecommendRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/schema.RecommendService/RecommendDialog',
+            schema__pb2.RecommendRequestDialog.SerializeToString,
+            schema__pb2.RecommendResponseList.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RecommendSummary(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/schema.RecommendService/RecommendSummary',
+            schema__pb2.RecommendRequestSummary.SerializeToString,
             schema__pb2.RecommendResponseList.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -44,9 +44,9 @@ func main() {
 		}
 	}(rClient)
 
-	recommendResult, err := rClient.GetRecommendation(recommend.Summary, dialogs, categories)
+	recommendResult, err := rClient.GetRecommendationDialogs(dialogs, categories)
 	if err != nil {
-		log.Fatalf("failed to get recommendation: %v", err)
+		log.Fatalf("failed to get recommendation for dialogs: %v", err)
 	}
 	log.Printf("recommendResult: %v", recommendResult)
 }

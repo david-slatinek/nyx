@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	RecommendService_Recommend_FullMethodName = "/schema.RecommendService/Recommend"
+	RecommendService_RecommendDialog_FullMethodName  = "/schema.RecommendService/RecommendDialog"
+	RecommendService_RecommendSummary_FullMethodName = "/schema.RecommendService/RecommendSummary"
 )
 
 // RecommendServiceClient is the client API for RecommendService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RecommendServiceClient interface {
-	Recommend(ctx context.Context, in *RecommendRequest, opts ...grpc.CallOption) (*RecommendResponseList, error)
+	RecommendDialog(ctx context.Context, in *RecommendRequestDialog, opts ...grpc.CallOption) (*RecommendResponseList, error)
+	RecommendSummary(ctx context.Context, in *RecommendRequestSummary, opts ...grpc.CallOption) (*RecommendResponseList, error)
 }
 
 type recommendServiceClient struct {
@@ -37,9 +39,18 @@ func NewRecommendServiceClient(cc grpc.ClientConnInterface) RecommendServiceClie
 	return &recommendServiceClient{cc}
 }
 
-func (c *recommendServiceClient) Recommend(ctx context.Context, in *RecommendRequest, opts ...grpc.CallOption) (*RecommendResponseList, error) {
+func (c *recommendServiceClient) RecommendDialog(ctx context.Context, in *RecommendRequestDialog, opts ...grpc.CallOption) (*RecommendResponseList, error) {
 	out := new(RecommendResponseList)
-	err := c.cc.Invoke(ctx, RecommendService_Recommend_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, RecommendService_RecommendDialog_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recommendServiceClient) RecommendSummary(ctx context.Context, in *RecommendRequestSummary, opts ...grpc.CallOption) (*RecommendResponseList, error) {
+	out := new(RecommendResponseList)
+	err := c.cc.Invoke(ctx, RecommendService_RecommendSummary_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +61,8 @@ func (c *recommendServiceClient) Recommend(ctx context.Context, in *RecommendReq
 // All implementations must embed UnimplementedRecommendServiceServer
 // for forward compatibility
 type RecommendServiceServer interface {
-	Recommend(context.Context, *RecommendRequest) (*RecommendResponseList, error)
+	RecommendDialog(context.Context, *RecommendRequestDialog) (*RecommendResponseList, error)
+	RecommendSummary(context.Context, *RecommendRequestSummary) (*RecommendResponseList, error)
 	mustEmbedUnimplementedRecommendServiceServer()
 }
 
@@ -58,8 +70,11 @@ type RecommendServiceServer interface {
 type UnimplementedRecommendServiceServer struct {
 }
 
-func (UnimplementedRecommendServiceServer) Recommend(context.Context, *RecommendRequest) (*RecommendResponseList, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Recommend not implemented")
+func (UnimplementedRecommendServiceServer) RecommendDialog(context.Context, *RecommendRequestDialog) (*RecommendResponseList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecommendDialog not implemented")
+}
+func (UnimplementedRecommendServiceServer) RecommendSummary(context.Context, *RecommendRequestSummary) (*RecommendResponseList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecommendSummary not implemented")
 }
 func (UnimplementedRecommendServiceServer) mustEmbedUnimplementedRecommendServiceServer() {}
 
@@ -74,20 +89,38 @@ func RegisterRecommendServiceServer(s grpc.ServiceRegistrar, srv RecommendServic
 	s.RegisterService(&RecommendService_ServiceDesc, srv)
 }
 
-func _RecommendService_Recommend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RecommendRequest)
+func _RecommendService_RecommendDialog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecommendRequestDialog)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RecommendServiceServer).Recommend(ctx, in)
+		return srv.(RecommendServiceServer).RecommendDialog(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: RecommendService_Recommend_FullMethodName,
+		FullMethod: RecommendService_RecommendDialog_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RecommendServiceServer).Recommend(ctx, req.(*RecommendRequest))
+		return srv.(RecommendServiceServer).RecommendDialog(ctx, req.(*RecommendRequestDialog))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecommendService_RecommendSummary_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecommendRequestSummary)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecommendServiceServer).RecommendSummary(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecommendService_RecommendSummary_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecommendServiceServer).RecommendSummary(ctx, req.(*RecommendRequestSummary))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -100,8 +133,12 @@ var RecommendService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*RecommendServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Recommend",
-			Handler:    _RecommendService_Recommend_Handler,
+			MethodName: "RecommendDialog",
+			Handler:    _RecommendService_RecommendDialog_Handler,
+		},
+		{
+			MethodName: "RecommendSummary",
+			Handler:    _RecommendService_RecommendSummary_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

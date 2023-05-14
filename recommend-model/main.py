@@ -8,27 +8,20 @@ import schema_pb2_grpc as pb2_grpc
 
 
 class RecommendServiceServicer(pb2_grpc.RecommendServiceServicer):
-    def Recommend(self, request, context):
+    def RecommendDialog(self, request, context):
         categories = request.categories
 
         labels = []
         scores = []
-        dialogs = []
         for dialog in request.dialogs:
             res = classifier(dialog, categories, multi_label=True)
-            dialogs.append(dialog)
             labels.append(res["labels"])
             scores.append(res["scores"])
-
-        res = classifier(request.summary, categories, multi_label=True)
-        dialogs.append(request.summary)
-        labels.append(res["labels"])
-        scores.append(res["scores"])
 
         res = []
         for i in range(len(labels)):
             res.append(pb2.RecommendResponse(
-                dialog=dialogs[i],
+                text=request.dialogs[i],
                 labels=labels[i],
                 scores=scores[i]
             ))
@@ -48,8 +41,3 @@ if __name__ == "__main__":
     server.add_insecure_port("[::]:9040")
     server.start()
     server.wait_for_termination()
-
-    # sequence_to_classify = "I really want to buy a new laptop, but I am not sure which one to buy."
-    # candidate_labels = ["pc", "laptops", "Dell", "Lenovo", "Apple"]
-    # res = classifier(sequence_to_classify, candidate_labels, multi_label=True)
-    # print(res)

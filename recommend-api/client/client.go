@@ -31,13 +31,13 @@ func (receiver Client) Close() error {
 	return receiver.connection.Close()
 }
 
-func (receiver Client) GetRecommendation(summary string, dialogs []model.Dialog, categories []model.Category) ([]model.RecommendResult, error) {
+func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categories []model.Category) ([]model.RecommendResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var dialogsMap = make(map[string]bool, len(dialogs))
+	var dialogsMap = make(map[string]string, len(dialogs))
 	for _, dialog := range dialogs {
-		dialogsMap[dialog.Text] = true
+		dialogsMap[dialog.Text] = dialog.ID
 	}
 
 	var dialogsText = make([]string, 0, len(dialogs))
@@ -48,9 +48,8 @@ func (receiver Client) GetRecommendation(summary string, dialogs []model.Dialog,
 	var categoriesText = make([]string, 0, len(categories))
 	util.GetCategoriesNames(categories, &categoriesText)
 
-	recommendResponse, err := receiver.client.Recommend(ctx, &pb.RecommendRequest{
+	recommendResponse, err := receiver.client.RecommendDialog(ctx, &pb.RecommendRequestDialog{
 		Dialogs:    dialogsText,
-		Summary:    summary,
 		Categories: categoriesText,
 	})
 	if err != nil {
@@ -60,7 +59,8 @@ func (receiver Client) GetRecommendation(summary string, dialogs []model.Dialog,
 	var recommendResult []model.RecommendResult
 	for _, value := range recommendResponse.Responses {
 		recommendResult = append(recommendResult, model.RecommendResult{
-			Dialog: value.Dialog,
+			ID:     dialogsMap[value.Text],
+			Dialog: value.Text,
 			Labels: value.Labels,
 			Scores: value.Scores,
 		})

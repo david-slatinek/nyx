@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\x12\x06schema\"H\n\x10RecommendRequest\x12\x0f\n\x07\x64ialogs\x18\x01 \x03(\t\x12\x0f\n\x07summary\x18\x02 \x01(\t\x12\x12\n\ncategories\x18\x03 \x03(\t\"C\n\x11RecommendResponse\x12\x0e\n\x06\x64ialog\x18\x01 \x01(\t\x12\x0e\n\x06labels\x18\x02 \x03(\t\x12\x0e\n\x06scores\x18\x03 \x03(\x02\"E\n\x15RecommendResponseList\x12,\n\tresponses\x18\x01 \x03(\x0b\x32\x19.schema.RecommendResponse2X\n\x10RecommendService\x12\x44\n\tRecommend\x12\x18.schema.RecommendRequest\x1a\x1d.schema.RecommendResponseListB\x04Z\x02./b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\x12\x06schema\"=\n\x16RecommendRequestDialog\x12\x0f\n\x07\x64ialogs\x18\x01 \x03(\t\x12\x12\n\ncategories\x18\x02 \x03(\t\">\n\x17RecommendRequestSummary\x12\x0f\n\x07summary\x18\x01 \x01(\t\x12\x12\n\ncategories\x18\x02 \x03(\t\"A\n\x11RecommendResponse\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0e\n\x06labels\x18\x02 \x03(\t\x12\x0e\n\x06scores\x18\x03 \x03(\x02\"E\n\x15RecommendResponseList\x12,\n\tresponses\x18\x01 \x03(\x0b\x32\x19.schema.RecommendResponse2\xb8\x01\n\x10RecommendService\x12P\n\x0fRecommendDialog\x12\x1e.schema.RecommendRequestDialog\x1a\x1d.schema.RecommendResponseList\x12R\n\x10RecommendSummary\x12\x1f.schema.RecommendRequestSummary\x1a\x1d.schema.RecommendResponseListB\x04Z\x02./b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'schema_pb2', globals())
@@ -21,12 +21,14 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'Z\002./'
-  _RECOMMENDREQUEST._serialized_start=24
-  _RECOMMENDREQUEST._serialized_end=96
-  _RECOMMENDRESPONSE._serialized_start=98
-  _RECOMMENDRESPONSE._serialized_end=165
-  _RECOMMENDRESPONSELIST._serialized_start=167
-  _RECOMMENDRESPONSELIST._serialized_end=236
-  _RECOMMENDSERVICE._serialized_start=238
-  _RECOMMENDSERVICE._serialized_end=326
+  _RECOMMENDREQUESTDIALOG._serialized_start=24
+  _RECOMMENDREQUESTDIALOG._serialized_end=85
+  _RECOMMENDREQUESTSUMMARY._serialized_start=87
+  _RECOMMENDREQUESTSUMMARY._serialized_end=149
+  _RECOMMENDRESPONSE._serialized_start=151
+  _RECOMMENDRESPONSE._serialized_end=216
+  _RECOMMENDRESPONSELIST._serialized_start=218
+  _RECOMMENDRESPONSELIST._serialized_end=287
+  _RECOMMENDSERVICE._serialized_start=290
+  _RECOMMENDSERVICE._serialized_end=474
 # @@protoc_insertion_point(module_scope)
