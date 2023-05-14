@@ -111,7 +111,7 @@ func (receiver Client) GetRecommendationSummary(summary model.Recommend, categor
 		}
 	}
 
-	sort.Slice(recommend.Labels, func(i, j int) bool {
+	sort.Slice(recommend.Scores, func(i, j int) bool {
 		return recommend.Scores[i] > recommend.Scores[j]
 	})
 	return recommend, nil
