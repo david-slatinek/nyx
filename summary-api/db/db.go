@@ -46,17 +46,18 @@ func (receiver CouchDB) Close(ctx context.Context) error {
 	return receiver.client.Close(ctx)
 }
 
-func (receiver CouchDB) AddSummary(dialogID, summary string) error {
+func (receiver CouchDB) AddSummary(dialogID, summary string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	id := uuid.New().String()
 	sm := model.Summary{
-		ID:        uuid.New().String(),
+		ID:        id,
 		DialogID:  dialogID,
 		Timestamp: time.Now(),
 		Summary:   summary,
 	}
 
 	_, err := receiver.couchDB.Put(ctx, sm.ID, sm)
-	return err
+	return id, err
 }

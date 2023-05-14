@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-const QueueName = "summary-q"
+const SummaryQueueName = "summary-q"
 const RecommendQueueName = "recommend-q"
 
 func main() {
@@ -41,10 +41,10 @@ func main() {
 	svc := sqs.New(sess)
 
 	urlResult, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: aws.String(QueueName),
+		QueueName: aws.String(SummaryQueueName),
 	})
 	if err != nil {
-		log.Fatalf("failed to get %s queue url: %v", QueueName, err)
+		log.Fatalf("failed to get %s queue url: %v", SummaryQueueName, err)
 	}
 
 	recommendUrlResult, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
@@ -100,70 +100,70 @@ func main() {
 				goto loop
 			}
 
-			if len(msgResult.Messages) > 0 {
-				msg := msgResult.Messages[0]
-				log.Printf("message: %v", *msg.Body)
-
-				dialogMap := map[string]string{}
-				if err := json.Unmarshal([]byte(*msg.Body), &dialogMap); err != nil {
-					log.Printf("failed to unmarshal message: %v", err)
-					goto loop
-				}
-
-				var dialogID, ok = dialogMap["dialogID"]
-				if !ok {
-					log.Printf("failed to get dialogID: %v", err)
-					goto loop
-				}
-
-				text, err := util.GetDialogs(dialogID)
-				if err != nil {
-					log.Printf("failed to get dialogs: %v", err)
-					goto loop
-				}
-
-				summary, err := grpcClient.GetSummary(text)
-				if err != nil {
-					log.Printf("failed to get summary: %v", err)
-					goto loop
-				}
-
-				err = couchDB.AddSummary(dialogID, summary)
-				if err != nil {
-					log.Printf("failed to add summary: %v", err)
-					goto loop
-				}
-				log.Printf("add summary to db\n")
-
-				jsonString, err := json.Marshal(map[string]string{
-					"dialogID": dialogID,
-					"summary":  summary,
-				})
-				if err != nil {
-					log.Printf("failed to marshal recommend content: %v", err)
-				}
-
-				_, err = svc.SendMessage(&sqs.SendMessageInput{
-					MessageBody: aws.String(string(jsonString)),
-					QueueUrl:    recommendUrlResult.QueueUrl,
-				})
-				if err != nil {
-					log.Printf("failed to send message: %v", err)
-					goto loop
-				}
-
-				log.Printf("send message to %s queue\n", RecommendQueueName)
-
-				_, err = svc.DeleteMessage(&sqs.DeleteMessageInput{
-					QueueUrl:      urlResult.QueueUrl,
-					ReceiptHandle: msg.ReceiptHandle,
-				})
-
-				if err != nil {
-					log.Printf("failed to delete message: %v", err)
-				}
-				log.Printf("delete message from %s queue\n", QueueName)
+			if len(msgResult.Messages) == 0 {
+				goto loop
 			}
+
+			msg := msgResult.Messages[0]
+			log.Printf("message: %v", *msg.Body)
+
+			dialogMap := map[string]string{}
+			if err := json.Unmarshal([]byte(*msg.Body), &dialogMap); err != nil {
+				log.Printf("failed to unmarshal message: %v", err)
+				goto loop
+			}
+
+			var dialogID, ok = dialogMap["dialogID"]
+			if !ok {
+				log.Printf("failed to get dialogID: %v", err)
+				goto loop
+			}
+
+			text, err := util.GetDialogs(dialogID)
+			if err != nil {
+				log.Printf("failed to get dialogs: %v", err)
+				goto loop
+			}
+
+			summary, err := grpcClient.GetSummary(text)
+			if err != nil {
+				log.Printf("failed to get summary: %v", err)
+				goto loop
+			}
+
+			id, err := couchDB.AddSummary(dialogID, summary)
+			if err != nil {
+				log.Printf("failed to add summary: %v", err)
+				goto loop
+			}
+
+			jsonString, err := json.Marshal(map[string]string{
+				"id":       id,
+				"dialogID": dialogID,
+				"summary":  summary,
+			})
+			if err != nil {
+				log.Printf("failed to marshal recommend content: %v", err)
+			}
+
+			_, err = svc.SendMessage(&sqs.SendMessageInput{
+				MessageBody: aws.String(string(jsonString)),
+				QueueUrl:    recommendUrlResult.QueueUrl,
+			})
+			if err != nil {
+				log.Printf("failed to send message: %v", err)
+				goto loop
+			}
+
+			_, err = svc.DeleteMessage(&sqs.DeleteMessageInput{
+				QueueUrl:      urlResult.QueueUrl,
+				ReceiptHandle: msg.ReceiptHandle,
+			})
+
+			if err != nil {
+				log.Printf("failed to delete message: %v", err)
+			}
+			log.Printf("delete message from %s queue\n", SummaryQueueName)
 
 			time.Sleep(time.Second)
 		}
