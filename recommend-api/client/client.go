@@ -7,6 +7,7 @@ import (
 	"main/model"
 	pb "main/schema"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -30,7 +31,7 @@ func (receiver Client) Close() error {
 	return receiver.connection.Close()
 }
 
-func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categoriesText []string) ([]model.RecommendResult, error) {
+func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categoriesText []string) ([]model.Recommendation, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -52,15 +53,37 @@ func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categori
 		return nil, err
 	}
 
-	var recommendResult []model.RecommendResult
+	var recommendResult []model.Recommendation
 	for _, value := range recommendResponse.Responses {
-		recommendResult = append(recommendResult, model.RecommendResult{
-			ID:     dialogsMap[value.Text],
-			Dialog: value.Text,
-			Labels: value.Labels,
-			Scores: value.Scores,
-		})
+		for i := range value.Scores {
+			if value.Scores[i] > 0.1 {
+				recommendResult = append(recommendResult, model.Recommendation{
+					ID:     dialogsMap[value.Text],
+					Dialog: value.Text,
+					Label:  value.Labels[i],
+					Score:  value.Scores[i],
+				})
+			}
+		}
 	}
+
+	sort.Slice(recommendResult, func(i, j int) bool {
+		return recommendResult[i].Score < recommendResult[j].Score
+	})
+
+	var mapRecommendResult = make(map[string]model.Recommendation, len(recommendResult))
+	for _, value := range recommendResult {
+		mapRecommendResult[value.Label] = value
+	}
+
+	recommendResult = make([]model.Recommendation, 0, len(mapRecommendResult))
+	for _, value := range mapRecommendResult {
+		recommendResult = append(recommendResult, value)
+	}
+
+	sort.Slice(recommendResult, func(i, j int) bool {
+		return recommendResult[i].Score > recommendResult[j].Score
+	})
 	return recommendResult, nil
 }
 
@@ -76,10 +99,20 @@ func (receiver Client) GetRecommendationSummary(summary model.Recommend, categor
 		return model.RecommendResult{}, err
 	}
 
-	return model.RecommendResult{
+	recommend := model.RecommendResult{
 		ID:     summary.DialogID,
 		Dialog: recommendResponse.Text,
-		Labels: recommendResponse.Labels,
-		Scores: recommendResponse.Scores,
-	}, nil
+	}
+
+	for i := range recommendResponse.Scores {
+		if recommendResponse.Scores[i] > 0.1 {
+			recommend.Labels = append(recommend.Labels, recommendResponse.Labels[i])
+			recommend.Scores = append(recommend.Scores, recommendResponse.Scores[i])
+		}
+	}
+
+	sort.Slice(recommend.Labels, func(i, j int) bool {
+		return recommend.Scores[i] > recommend.Scores[j]
+	})
+	return recommend, nil
 }
