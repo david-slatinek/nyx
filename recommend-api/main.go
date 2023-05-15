@@ -7,7 +7,13 @@ import (
 	"main/model"
 	"main/queue"
 	"main/util"
+	"os"
+	"os/signal"
+	"syscall"
 )
+
+const QueueRecommend = "recommend-q"
+const QueueEmail = "email-q"
 
 func main() {
 	err := env.Load("env/.env")
@@ -15,29 +21,20 @@ func main() {
 		log.Fatalf("failed to load env: %v", err)
 	}
 
-	recommend := model.Recommend{
-		ID:       "c3c27bd5-22ee-4c25-9f32-b8f5d0bedf40",
-		DialogID: "86ce24c7-8108-4d2f-86fe-a687f246c0d6",
-		Summary:  "Sarah is in her early twenties and doesn't know what to do with herself. She doesn't have any siblings. She is not sure if she has any plans for the future. She's not sure what her name is. She's called Sarah.",
-	}
-
-	emailQueue, err := queue.NewQueue("email-q")
+	recommendQueue, err := queue.NewQueue(QueueRecommend)
 	if err != nil {
-		log.Fatalf("failed to create email queue: %v", err)
+		log.Fatalf("failed to get %s queue url: %v", QueueRecommend, err)
 	}
 
-	dialogs, err := util.GetDialogs(recommend.DialogID)
+	emailQueue, err := queue.NewQueue(QueueEmail)
 	if err != nil {
-		log.Fatalf("failed to get dialogs: %v", err)
+		log.Fatalf("failed to get %s queue url: %v", QueueEmail, err)
 	}
 
-	categories, err := util.GetCategories()
-	if err != nil {
-		log.Fatalf("failed to get categories: %v", err)
-	}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
 
-	var categoriesText = make([]string, 0, len(categories))
-	util.GetCategoriesNames(categories, &categoriesText)
+	recommendChannel := make(chan model.Result, 1)
 
 	rClient, err := client.NewClient()
 	if err != nil {
@@ -49,25 +46,99 @@ func main() {
 		}
 	}(rClient)
 
-	recommendResult, err := rClient.GetRecommendationDialogs(dialogs, categoriesText)
-	if err != nil {
-		log.Fatalf("failed to get recommendation for dialogs: %v", err)
-	}
-	log.Printf("recommendResult: %v", recommendResult)
+	go func() {
+		for {
+			select {
+			case <-c:
+				return
+			default:
+				recommend, deleteM, err := recommendQueue.Receive()
+				if err != nil {
+					log.Printf("failed to receive from queue: %v", err)
+					continue
+				}
+				recommendChannel <- model.Result{
+					Recommend: recommend,
+					Delete:    deleteM,
+				}
+			}
+		}
+	}()
 
-	err = emailQueue.Send(recommendResult)
-	if err != nil {
-		log.Printf("failed to send to queue: %v", err)
-	}
+	go func() {
+		for {
+			select {
+			case <-c:
+				return
+			default:
+				break
+			}
 
-	recommendResultSummary, err := rClient.GetRecommendationSummary(recommend, categoriesText)
-	if err != nil {
-		log.Fatalf("failed to get recommendation for summary: %v", err)
-	}
-	log.Printf("recommendResultSummary: %v", recommendResultSummary)
+			recommend := <-recommendChannel
 
-	err = emailQueue.Send(recommendResultSummary)
-	if err != nil {
-		log.Printf("failed to send to queue: %v", err)
-	}
+			log.Printf("Got recommend from queue: %v", recommend.Recommend.DialogID)
+
+			dialogs, err := util.GetDialogs(recommend.Recommend.DialogID)
+			if err != nil {
+				log.Printf("failed to get dialogs: %v", err)
+				continue
+			}
+
+			categories, err := util.GetCategories()
+			if err != nil {
+				log.Printf("failed to get categories: %v", err)
+				continue
+			}
+
+			var categoriesText = make([]string, 0, len(categories))
+			util.GetCategoriesNames(categories, &categoriesText)
+
+			recommendResult, err := rClient.GetRecommendationDialogs(dialogs, categoriesText)
+			if err != nil {
+				log.Printf("failed to get recommendation for dialogs: %v", err)
+				continue
+			}
+
+			if len(recommendResult) == 0 {
+				log.Printf("recommendResult is empty")
+				continue
+			}
+
+			err = emailQueue.Send(recommendResult)
+			if err != nil {
+				log.Printf("failed to send to queue: %v", err)
+			} else {
+				log.Printf("recommendResult sent")
+			}
+
+			recommendResultSummary, err := rClient.GetRecommendationSummary(recommend.Recommend, categoriesText)
+			if err != nil {
+				log.Printf("failed to get recommendation for summary: %v", err)
+				continue
+			}
+			if len(recommendResultSummary) == 0 {
+				log.Printf("recommendResultSummary is empty")
+				continue
+			}
+
+			err = emailQueue.Send(recommendResultSummary)
+			if err != nil {
+				log.Printf("failed to send to queue: %v", err)
+				continue
+			} else {
+				log.Printf("recommendResultSummary sent")
+			}
+
+			err = recommend.Delete()
+			if err != nil {
+				log.Printf("failed to delete message: %v", err)
+				continue
+			}
+			log.Printf("recommendation sent")
+		}
+	}()
+
+	log.Println("Recommend API is running")
+	<-c
+	log.Println("Recommend API is shutting down")
 }

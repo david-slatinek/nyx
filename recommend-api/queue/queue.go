@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -52,4 +53,42 @@ func (q *Queue) Send(recommendation []model.Recommendation) error {
 		QueueUrl:    &q.queueUrl,
 	})
 	return err
+}
+
+func (q *Queue) Receive() (model.Recommend, func() error, error) {
+	result, err := q.svc.ReceiveMessage(&sqs.ReceiveMessageInput{
+		QueueUrl:            &q.queueUrl,
+		MaxNumberOfMessages: aws.Int64(1),
+		WaitTimeSeconds:     aws.Int64(10),
+	})
+	if err != nil {
+		return model.Recommend{}, nil, err
+	}
+
+	if len(result.Messages) == 0 {
+		return model.Recommend{}, nil, errors.New("no messages in queue")
+	}
+
+	var recommendation model.Recommend
+	err = json.Unmarshal([]byte(*result.Messages[0].Body), &recommendation)
+	if err != nil {
+		return model.Recommend{}, nil, err
+	}
+
+	deleteMessage := func() error {
+		_, err = q.svc.DeleteMessage(&sqs.DeleteMessageInput{
+			QueueUrl:      &q.queueUrl,
+			ReceiptHandle: result.Messages[0].ReceiptHandle,
+		})
+		return err
+	}
+
+	//_, err = q.svc.DeleteMessage(&sqs.DeleteMessageInput{
+	//	QueueUrl:      &q.queueUrl,
+	//	ReceiptHandle: result.Messages[0].ReceiptHandle,
+	//})
+	//if err != nil {
+	//	return model.Recommend{}, err
+	//}
+	return recommendation, deleteMessage, nil
 }

@@ -17,10 +17,14 @@ type Client struct {
 }
 
 func NewClient() (Client, error) {
-	conn, err := grpc.Dial(os.Getenv("RECOMMEND_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	conn, err := grpc.DialContext(ctx, os.Getenv("RECOMMEND_MODEL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return Client{}, err
 	}
+
 	return Client{
 		connection: conn,
 		client:     pb.NewRecommendServiceClient(conn),
@@ -32,7 +36,7 @@ func (receiver Client) Close() error {
 }
 
 func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categoriesText []string) ([]model.Recommendation, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	var dialogsMap = make(map[string]string, len(dialogs))
@@ -87,7 +91,7 @@ func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categori
 }
 
 func (receiver Client) GetRecommendationSummary(summary model.Recommend, categoriesText []string) ([]model.Recommendation, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	recommendResponse, err := receiver.client.RecommendSummary(ctx, &pb.RecommendRequestSummary{

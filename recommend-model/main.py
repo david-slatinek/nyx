@@ -9,10 +9,11 @@ import schema_pb2_grpc as pb2_grpc
 
 class RecommendServiceServicer(pb2_grpc.RecommendServiceServicer):
     def RecommendDialog(self, request, context):
+        print("RecommendDialog request received")
+
         categories = request.categories
 
-        labels = []
-        scores = []
+        labels, scores = [], []
         for dialog in request.dialogs:
             res = classifier(dialog, categories, multi_label=True)
             labels.append(res["labels"])
@@ -26,14 +27,20 @@ class RecommendServiceServicer(pb2_grpc.RecommendServiceServicer):
                 scores=scores[i]
             ))
 
+        print("RecommendDialog response sent")
+
         return pb2.RecommendResponseList(
             responses=res
         )
 
     def RecommendSummary(self, request, context):
+        print("RecommendSummary request received")
+
         categories = request.categories
 
         res = classifier(request.summary, categories, multi_label=True)
+
+        print("RecommendSummary response sent")
 
         return pb2.RecommendResponse(
             text=request.summary,
