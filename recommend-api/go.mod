@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.262
 	github.com/joho/godotenv v1.5.1
 	github.com/levigross/grequests v0.0.0-20221222020224-9eee758d18d5
+	github.com/roylee0704/gron v0.0.0-20160621042432-e78485adab46
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 )

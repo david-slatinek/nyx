@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/roylee0704/gron"
 	"log"
 	"main/client"
 	"main/env"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 const QueueRecommend = "recommend-q"
@@ -45,6 +47,12 @@ func main() {
 			log.Printf("failed to close client: %v", err)
 		}
 	}(rClient)
+
+	util.GetCategories()
+
+	g := gron.New()
+	g.AddFunc(gron.Every(30*time.Minute), util.GetCategories)
+	g.Start()
 
 	go func() {
 		for {
@@ -84,16 +92,7 @@ func main() {
 				continue
 			}
 
-			categories, err := util.GetCategories()
-			if err != nil {
-				log.Printf("failed to get categories: %v", err)
-				continue
-			}
-
-			var categoriesText = make([]string, 0, len(categories))
-			util.GetCategoriesNames(categories, &categoriesText)
-
-			recommendResult, err := rClient.GetRecommendationDialogs(dialogs, categoriesText)
+			recommendResult, err := rClient.GetRecommendationDialogs(dialogs, util.CategoriesText)
 			if err != nil {
 				log.Printf("failed to get recommendation for dialogs: %v", err)
 				continue
@@ -111,7 +110,13 @@ func main() {
 				log.Printf("recommendResult sent")
 			}
 
-			recommendResultSummary, err := rClient.GetRecommendationSummary(recommend.Recommend, categoriesText)
+			err = recommend.Delete()
+			if err != nil {
+				log.Printf("failed to delete message: %v", err)
+				continue
+			}
+
+			recommendResultSummary, err := rClient.GetRecommendationSummary(recommend.Recommend, util.CategoriesText)
 			if err != nil {
 				log.Printf("failed to get recommendation for summary: %v", err)
 				continue
@@ -134,7 +139,6 @@ func main() {
 				log.Printf("failed to delete message: %v", err)
 				continue
 			}
-			log.Printf("recommendation sent")
 		}
 	}()
 
