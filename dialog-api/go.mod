@@ -3,6 +3,7 @@ module main
 go 1.20
 
 require (
+	github.com/aws/aws-sdk-go v1.44.259
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-kivik/couchdb/v3 v3.3.0
 	github.com/go-kivik/kivik/v3 v3.2.4
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go v1.44.259 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect

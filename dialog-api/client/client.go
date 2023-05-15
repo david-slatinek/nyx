@@ -16,7 +16,7 @@ type Client struct {
 }
 
 func NewClient() (Client, error) {
-	conn, err := grpc.Dial(os.Getenv("DIALOG_URL")+":9080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(os.Getenv("DIALOG_MODEL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return Client{}, err
 	}

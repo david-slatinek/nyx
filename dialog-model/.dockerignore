@@ -1,4 +1,8 @@
+.dvc
+data
+src
+train
+.dvcignore
 .gitignore
 Makefile
-schema.proto
 __pycache__

@@ -109,5 +109,5 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Printf("Shutdown() error: %s\n", err)
 	}
-	log.Println("shutting down")
+	log.Println("shutting down dialog-api")
 }
