@@ -10,7 +10,7 @@ import schema_pb2_grpc as pb2_grpc
 class SummaryServiceServicer(pb2_grpc.SummaryServiceServicer):
     def Summary(self, request, context):
         text = request.text
-        print(f"Summary: {text}")
+        print(f"Text: {text}")
 
         summary = summarizer(text)
 

@@ -41,7 +41,7 @@ func main() {
 		defer cancel()
 
 		if err := client.Close(ctx); err != nil {
-			log.Fatalf("failed to close db: %v", err)
+			log.Printf("failed to close db: %v", err)
 		}
 	}(couchDB)
 

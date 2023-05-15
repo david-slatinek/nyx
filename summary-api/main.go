@@ -73,7 +73,7 @@ func main() {
 		defer cancel()
 
 		if err := client.Close(ctx); err != nil {
-			log.Fatalf("failed to close db: %v", err)
+			log.Printf("failed to close db: %v", err)
 		}
 	}(couchDB)
 
@@ -82,7 +82,6 @@ func main() {
 
 	go func() {
 		for {
-		loop:
 			select {
 			case <-c:
 				return
@@ -97,11 +96,11 @@ func main() {
 
 			if err != nil {
 				log.Printf("failed to receive message: %v", err)
-				goto loop
+				continue
 			}
 
 			if len(msgResult.Messages) == 0 {
-				goto loop
+				continue
 			}
 
 			msg := msgResult.Messages[0]
@@ -110,31 +109,31 @@ func main() {
 			dialogMap := map[string]string{}
 			if err := json.Unmarshal([]byte(*msg.Body), &dialogMap); err != nil {
 				log.Printf("failed to unmarshal message: %v", err)
-				goto loop
+				continue
 			}
 
 			var dialogID, ok = dialogMap["dialogID"]
 			if !ok {
 				log.Printf("failed to get dialogID: %v", err)
-				goto loop
+				continue
 			}
 
 			text, err := util.GetDialogs(dialogID)
 			if err != nil {
 				log.Printf("failed to get dialogs: %v", err)
-				goto loop
+				continue
 			}
 
 			summary, err := grpcClient.GetSummary(text)
 			if err != nil {
 				log.Printf("failed to get summary: %v", err)
-				goto loop
+				continue
 			}
 
 			id, err := couchDB.AddSummary(dialogID, summary)
 			if err != nil {
 				log.Printf("failed to add summary: %v", err)
-				goto loop
+				continue
 			}
 
 			jsonString, err := json.Marshal(map[string]string{
@@ -144,6 +143,7 @@ func main() {
 			})
 			if err != nil {
 				log.Printf("failed to marshal recommend content: %v", err)
+				continue
 			}
 
 			_, err = svc.SendMessage(&sqs.SendMessageInput{
@@ -152,7 +152,7 @@ func main() {
 			})
 			if err != nil {
 				log.Printf("failed to send message: %v", err)
-				goto loop
+				continue
 			}
 
 			_, err = svc.DeleteMessage(&sqs.DeleteMessageInput{
@@ -162,10 +162,9 @@ func main() {
 
 			if err != nil {
 				log.Printf("failed to delete message: %v", err)
+				continue
 			}
 			log.Printf("delete message from %s queue\n", SummaryQueueName)
-
-			time.Sleep(time.Second)
 		}
 	}()
 
