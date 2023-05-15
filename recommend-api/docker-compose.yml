@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  recommend-api:
+    build: .
+    container_name: recommend-api-con
+    hostname: recommend-api-service
+    restart: unless-stopped
+    env_file:
+      - .env-prod
+    environment:
+      - GIN_MODE=release
+    networks:
+      - nyx-network
+
+networks:
+  nyx-network:
+    name: nyx-network
+    driver: bridge
