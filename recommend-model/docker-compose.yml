@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  recommend-model:
+    build: .
+    ports:
+      - "9040:9040"
+    container_name: recommend-model-con
+    hostname: recommend-model-service
+    restart: unless-stopped
+    networks:
+      - nyx-network
+
+networks:
+  nyx-network:
+    name: nyx-network
+    driver: bridge
