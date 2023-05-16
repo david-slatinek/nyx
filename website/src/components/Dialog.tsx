@@ -79,6 +79,6 @@ const Dialog = (props: { url: string; }) => {
             </form>
         </div>
     );
-}
+};
 
 export default Dialog;
