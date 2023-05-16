@@ -112,6 +112,12 @@ func main() {
 				continue
 			}
 
+			var userID = dialogMap["userID"]
+			if userID == "" {
+				log.Printf("failed to get userID: %v", err)
+				continue
+			}
+
 			var dialogID, ok = dialogMap["dialogID"]
 			if !ok {
 				log.Printf("failed to get dialogID: %v", err)
@@ -137,9 +143,10 @@ func main() {
 			}
 
 			jsonString, err := json.Marshal(map[string]string{
-				"id":       id,
-				"dialogID": dialogID,
-				"summary":  summary,
+				"summaryID": id,
+				"summary":   summary,
+				"dialogID":  dialogID,
+				"userID":    userID,
 			})
 			if err != nil {
 				log.Printf("failed to marshal recommend content: %v", err)
