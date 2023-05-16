@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+var Categories []model.Category
 var CategoriesText []string
 
 func GetDialogs(dialogID string) ([]model.Dialog, error) {
@@ -36,6 +37,7 @@ func GetCategories() {
 		log.Printf("failed to get unmarshall categories: %v", err)
 		return
 	}
+	Categories = categories
 
 	getCategoriesNames(categories, &CategoriesText)
 }
@@ -48,4 +50,17 @@ func getCategoriesNames(category []model.Category, categories *[]string) {
 			getCategoriesNames(category[i].Subcategories, categories)
 		}
 	}
+}
+
+func GetMainCategoryID(categories []model.Category, label string) string {
+	for _, category := range categories {
+		if category.Name == label {
+			return category.ID
+		}
+
+		if category.Subcategories != nil {
+			return GetMainCategoryID(category.Subcategories, label)
+		}
+	}
+	return ""
 }
