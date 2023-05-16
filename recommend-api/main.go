@@ -159,6 +159,25 @@ func main() {
 				continue
 			}
 
+			recommendModel = make([]model.RecommendDB, len(recommendResultSummary))
+			for key, r := range recommendResultSummary {
+				recommendModel[key] = model.RecommendDB{
+					UserID:        recommend.Recommend.UserID,
+					FkCategory:    util.GetMainCategoryID(util.Categories, r.Label),
+					CategoryName:  r.Label,
+					Score:         r.Score,
+					FkMainDialog:  r.ID,
+					FkDialog:      r.ID,
+					RecommendedAt: time.Now(),
+				}
+			}
+
+			err = recommendDB.Create(recommendModel)
+			if err != nil {
+				log.Printf("failed to save recommend summary to db: %v", err)
+				continue
+			}
+
 			err = emailQueue.Send(recommendResultSummary)
 			if err != nil {
 				log.Printf("failed to send to queue: %v", err)
