@@ -90,7 +90,6 @@ func (receiver DialogController) EndDialog(ctx *gin.Context) {
 	if dialog.UserID != "" {
 		dialog.UserID = util.UserID
 	}
-	log.Printf("dialogID: %s", dialog.DialogID)
 
 	dialogs, err := receiver.db.GetByDialogID(dialog.DialogID)
 

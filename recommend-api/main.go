@@ -68,36 +68,6 @@ func main() {
 		}
 	}(recommendDB)
 
-	recommendModel := make([]model.RecommendDB, 2)
-	recommendModel[0] = model.RecommendDB{
-		UserID:        "1",
-		FkCategory:    "1",
-		CategoryName:  "pc",
-		Score:         0.5,
-		FkMainDialog:  "1",
-		FkDialog:      "1",
-		RecommendedAt: time.Now(),
-	}
-
-	recommendModel[1] = model.RecommendDB{
-		UserID:        "1",
-		FkCategory:    "1",
-		CategoryName:  "pc",
-		Score:         0.5,
-		FkMainDialog:  "2",
-		FkDialog:      "2",
-		RecommendedAt: time.Now(),
-	}
-
-	err = recommendDB.Create(recommendModel)
-	if err != nil {
-		log.Fatalf("failed to create recommend: %v", err)
-	}
-
-	log.Printf("id: %v", recommendModel[0].ID)
-
-	os.Exit(0)
-
 	go func() {
 		for {
 			select {
@@ -116,35 +86,6 @@ func main() {
 			}
 		}
 	}()
-
-	//recommendDB, err := db.NewRecommendDB()
-	//if err != nil {
-	//	log.Fatalf("failed to connect to db: %v", err)
-	//}
-	//defer func(recommendDB db.RecommendDB) {
-	//	if err := recommendDB.Close(); err != nil {
-	//		log.Printf("failed to close db: %v", err)
-	//	}
-	//}(recommendDB)
-	//
-	//recommendModel := make([]model.RecommendDB, 2)
-	//recommendModel[0] = model.RecommendDB{
-	//	UserID:       "1",
-	//	FkCategory:   "1",
-	//	CategoryName: "pc",
-	//	Score:        0.5,
-	//	FkMainDialog: "1",
-	//	FkDialog:     "1",
-	//}
-	//
-	//recommendModel[1] = model.RecommendDB{
-	//	UserID:       "1",
-	//	FkCategory:   "1",
-	//	CategoryName: "pc",
-	//	Score:        0.5,
-	//	FkMainDialog: "2",
-	//	FkDialog:     "2",
-	//}
 
 	go func() {
 		for {
@@ -171,17 +112,24 @@ func main() {
 				continue
 			}
 
-			//recommendModel := make([]model.RecommendDB, 0)
-			//for key, r := range recommendResult {
-			//	recommendModel[key] = model.RecommendDB{
-			//		UserID:       recommend.Recommend.UserID,
-			//		FkCategory:   util.GetMainCategoryID(util.Categories, r.Label),
-			//		CategoryName: r.Label,
-			//		Score:        r.Score,
-			//		FkMainDialog: recommend.Recommend.DialogID,
-			//		FkDialog:     dialogs[key].ID,
-			//	}
-			//}
+			recommendModel := make([]model.RecommendDB, len(recommendResult))
+			for key, r := range recommendResult {
+				recommendModel[key] = model.RecommendDB{
+					UserID:        recommend.Recommend.UserID,
+					FkCategory:    util.GetMainCategoryID(util.Categories, r.Label),
+					CategoryName:  r.Label,
+					Score:         r.Score,
+					FkMainDialog:  recommend.Recommend.DialogID,
+					FkDialog:      dialogs[key].ID,
+					RecommendedAt: time.Now(),
+				}
+			}
+
+			err = recommendDB.Create(recommendModel)
+			if err != nil {
+				log.Printf("failed to save recommend to db: %v", err)
+				continue
+			}
 
 			if len(recommendResult) == 0 {
 				log.Printf("recommendResult is empty")

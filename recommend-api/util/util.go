@@ -57,10 +57,17 @@ func GetMainCategoryID(categories []model.Category, label string) string {
 		if category.Name == label {
 			return category.ID
 		}
+	}
+
+	for _, category := range categories {
+		if category.Name == label {
+			return category.ID
+		}
 
 		if category.Subcategories != nil {
 			return GetMainCategoryID(category.Subcategories, label)
 		}
 	}
+
 	return ""
 }
