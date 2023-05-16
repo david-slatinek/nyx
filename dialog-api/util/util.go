@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"main/model"
+	"net/http"
 	"time"
 )
 
@@ -27,4 +28,17 @@ func GetDialog(ctx *gin.Context) (model.Dialog, error) {
 	dialog.Timestamp = time.Now()
 
 	return dialog, nil
+}
+
+func CORS(ctx *gin.Context) {
+	ctx.Header("Access-Control-Allow-Origin", "*")
+	ctx.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, Authorization, Origin, Accept, Cache-Control")
+	ctx.Header("Access-Control-Allow-Methods", "OPTIONS, POST, GET")
+	ctx.Header("Access-Control-Max-Age", "86400")
+
+	if ctx.Request.Method == http.MethodOptions {
+		ctx.AbortWithStatus(http.StatusOK)
+		return
+	}
+	ctx.Next()
 }

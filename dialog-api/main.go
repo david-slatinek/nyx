@@ -14,6 +14,7 @@ import (
 	"main/db"
 	"main/env"
 	"main/model"
+	"main/util"
 	"net/http"
 	"os"
 	"os/signal"
@@ -77,6 +78,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create dialog controller: %v", err)
 	}
+
+	router.Use(util.CORS)
 
 	router.GET("/user", dialogController.UserID)
 	router.GET("/dialog", dialogController.DialogID)

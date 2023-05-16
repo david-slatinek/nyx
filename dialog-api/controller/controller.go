@@ -2,10 +2,12 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"log"
 	"main/client"
 	"main/db"
 	"main/model"
@@ -88,6 +90,15 @@ func (receiver DialogController) EndDialog(ctx *gin.Context) {
 	if dialog.UserID != "" {
 		dialog.UserID = util.UserID
 	}
+	log.Printf("dialogID: %s", dialog.DialogID)
+
+	dialogs, err := receiver.db.GetByDialogID(dialog.DialogID)
+
+	if err != nil || len(dialogs) == 0 {
+		log.Printf("dialog with id %s not found", dialog.DialogID)
+		ctx.JSON(http.StatusBadRequest, model.Error{Error: fmt.Sprintf("dialog with id %s not found", dialog.DialogID)})
+		return
+	}
 
 	jsonString, err := json.Marshal(gin.H{"dialogID": dialog.DialogID, "userID": dialog.UserID})
 	if err != nil {
@@ -104,6 +115,8 @@ func (receiver DialogController) EndDialog(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
 		return
 	}
+	log.Println("message sent to the queue")
+
 	ctx.JSON(http.StatusOK, gin.H{"message": "dialog ended"})
 }
 
