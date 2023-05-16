@@ -55,9 +55,6 @@ func main() {
 	g.AddFunc(gron.Every(30*time.Minute), util.GetCategories)
 	g.Start()
 
-	//mainID := util.GetMainCategoryID(util.Categories, "Dell")
-	//log.Printf("mainID: %v", mainID)
-
 	recommendDB, err := db.NewRecommendDB()
 	if err != nil {
 		log.Fatalf("failed to connect to db: %v", err)
@@ -189,7 +186,6 @@ func main() {
 			err = recommend.Delete()
 			if err != nil {
 				log.Printf("failed to delete message: %v", err)
-				continue
 			}
 		}
 	}()
