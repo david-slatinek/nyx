@@ -83,12 +83,5 @@ func (q *Queue) Receive() (model.Recommend, func() error, error) {
 		return err
 	}
 
-	//_, err = q.svc.DeleteMessage(&sqs.DeleteMessageInput{
-	//	QueueUrl:      &q.queueUrl,
-	//	ReceiptHandle: result.Messages[0].ReceiptHandle,
-	//})
-	//if err != nil {
-	//	return model.Recommend{}, err
-	//}
 	return recommendation, deleteMessage, nil
 }
