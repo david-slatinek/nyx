@@ -85,7 +85,11 @@ func (receiver DialogController) EndDialog(ctx *gin.Context) {
 		return
 	}
 
-	jsonString, err := json.Marshal(gin.H{"dialogID": dialog.DialogID})
+	if dialog.UserID != "" {
+		dialog.UserID = util.UserID
+	}
+
+	jsonString, err := json.Marshal(gin.H{"dialogID": dialog.DialogID, "userID": dialog.UserID})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
 		return
@@ -129,4 +133,24 @@ func (receiver DialogController) GetDialogs(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, dialogs)
+}
+
+func (receiver DialogController) GetUserIDByDialogID(ctx *gin.Context) {
+	dialogID := ctx.Param("dialogID")
+
+	if len(dialogID) != 36 {
+		ctx.JSON(http.StatusBadRequest, model.Error{Error: "invalid dialog id, must be 36 characters long"})
+		return
+	}
+
+	dialogs, err := receiver.db.GetByDialogID(dialogID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Error{Error: err.Error()})
+		return
+	}
+	if len(dialogs) == 0 {
+		ctx.JSON(http.StatusBadRequest, model.Error{Error: "dialog not found"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"userID": dialogs[0].UserID})
 }

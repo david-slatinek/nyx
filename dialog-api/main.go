@@ -84,6 +84,7 @@ func main() {
 	router.POST("/end", dialogController.EndDialog)
 	router.GET("/dialog/:id", dialogController.GetDialog)
 	router.GET("/dialogs", dialogController.GetDialogs)
+	router.GET("/user/:dialogID", dialogController.GetUserIDByDialogID)
 
 	srv := &http.Server{
 		Addr:         ":8080",
