@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"main/env"
 	"main/model"
@@ -17,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load env: %v", err)
 	}
-	
+
 	emailQueue, err := queue.NewQueue(QueueEmail)
 	if err != nil {
 		log.Fatalf("failed to get %s queue url: %v", QueueEmail, err)
@@ -46,6 +47,11 @@ func main() {
 		}
 	}()
 
+	f, err := os.Create("output.html")
+	if err != nil {
+		log.Printf("failed to create file: %v", err)
+	}
+
 	go func() {
 		for {
 			select {
@@ -53,12 +59,29 @@ func main() {
 				break
 			case recommend := <-recommendChannel:
 				log.Printf("recommend: %v", recommend.Recommend)
+
+				t, err := template.New("template.html").ParseFiles("template.html")
+				if err != nil {
+					log.Printf("failed to parse template: %v", err)
+					break
+				}
+
+				err = t.Execute(f, recommend.Recommend)
+				if err != nil {
+					log.Printf("failed to execute template: %v", err)
+				}
 				break
 			default:
 				break
 			}
 		}
 	}()
+
+	defer func(f *os.File) {
+		if err := f.Close(); err != nil {
+			log.Printf("failed to close file: %v", err)
+		}
+	}(f)
 
 	log.Printf("waiting for messages from %s\n", QueueEmail)
 	<-c

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Recommended products</title>
+</head>
+
+<body>
+
+<h1>Based on your chat, here are some product that might interest you!</h1>
+{{ range . }}
+<div>
+    <p>{{ .RecommendID }}</p>
+    <br>
+</div>
+{{ end }}
+</body>
+</html>
