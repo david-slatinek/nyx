@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-var Categories []model.Category
 var CategoriesText []string
+var CategoriesMap = make(map[string]string)
 
 func GetDialogs(dialogID string) ([]model.Dialog, error) {
 	resp, err := grequests.Get(os.Getenv("DIALOG_URL")+"/dialog/"+dialogID, nil)
@@ -37,37 +37,17 @@ func GetCategories() {
 		log.Printf("failed to get unmarshall categories: %v", err)
 		return
 	}
-	Categories = categories
 
 	getCategoriesNames(categories, &CategoriesText)
 }
 
 func getCategoriesNames(category []model.Category, categories *[]string) {
-	for i := range category {
-		*categories = append(*categories, category[i].Name)
+	for key, value := range category {
+		*categories = append(*categories, category[key].Name)
+		CategoriesMap[value.Name] = value.ID
 
-		if category[i].Subcategories != nil {
-			getCategoriesNames(category[i].Subcategories, categories)
+		if category[key].Subcategories != nil {
+			getCategoriesNames(category[key].Subcategories, categories)
 		}
 	}
-}
-
-func GetMainCategoryID(categories []model.Category, label string) string {
-	for _, category := range categories {
-		if category.Name == label {
-			return category.ID
-		}
-	}
-
-	for _, category := range categories {
-		if category.Name == label {
-			return category.ID
-		}
-
-		if category.Subcategories != nil {
-			return GetMainCategoryID(category.Subcategories, label)
-		}
-	}
-
-	return ""
 }

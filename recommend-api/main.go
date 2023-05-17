@@ -9,6 +9,7 @@ import (
 	"main/model"
 	"main/queue"
 	"main/util"
+	"math"
 	"os"
 	"os/signal"
 	"syscall"
@@ -103,41 +104,8 @@ func main() {
 					log.Printf("failed to get recommendation for dialogs: %v", err)
 					continue
 				}
-
 				if len(recommendResult) == 0 {
 					log.Printf("recommendResult is empty")
-					continue
-				}
-
-				recommendModel := make([]model.RecommendDB, len(recommendResult))
-				for key, r := range recommendResult {
-					recommendModel[key] = model.RecommendDB{
-						UserID:        recommend.Recommend.UserID,
-						FkCategory:    util.GetMainCategoryID(util.Categories, r.Label),
-						CategoryName:  r.Label,
-						Score:         r.Score,
-						FkMainDialog:  recommend.Recommend.DialogID,
-						FkDialog:      dialogs[key].ID,
-						RecommendedAt: time.Now(),
-					}
-				}
-
-				err = recommendDB.Create(recommendModel)
-				if err != nil {
-					log.Printf("failed to save recommend to db: %v", err)
-					continue
-				}
-
-				err = emailQueue.Send(recommendResult)
-				if err != nil {
-					log.Printf("failed to send to queue: %v", err)
-				} else {
-					log.Printf("recommendResult sent")
-				}
-
-				err = recommend.Delete()
-				if err != nil {
-					log.Printf("failed to delete message: %v", err)
 					continue
 				}
 
@@ -146,22 +114,42 @@ func main() {
 					log.Printf("failed to get recommendation for summary: %v", err)
 					continue
 				}
-				if len(recommendResultSummary) == 0 {
-					log.Printf("recommendResultSummary is empty")
+				if len(recommendResultSummary) == 0 && len(recommendResult) == 0 {
+					log.Printf("recommendResultSummary and recommendResult are empty")
 					continue
 				}
 
-				recommendModel = make([]model.RecommendDB, len(recommendResultSummary))
-				for key, r := range recommendResultSummary {
-					recommendModel[key] = model.RecommendDB{
-						UserID:        recommend.Recommend.UserID,
-						FkCategory:    util.GetMainCategoryID(util.Categories, r.Label),
-						CategoryName:  r.Label,
-						Score:         r.Score,
-						FkMainDialog:  r.ID,
-						FkDialog:      r.ID,
-						RecommendedAt: time.Now(),
+				length := int(math.Max(float64(len(recommendResult)), float64(len(recommendResultSummary))))
+				objects := make(map[string]model.Recommendation, length)
+
+				for _, value := range recommendResult {
+					objects[value.Label] = value
+				}
+
+				for _, value := range recommendResultSummary {
+					obj, ok := objects[value.Label]
+					if ok {
+						if obj.Score < value.Score {
+							objects[value.Label] = value
+						}
+					} else {
+						objects[value.Label] = value
 					}
+				}
+
+				recommendModel := make([]model.RecommendDB, 0, length)
+				for _, value := range objects {
+					log.Printf("value: %v", value)
+
+					recommendModel = append(recommendModel, model.RecommendDB{
+						UserID:        recommend.Recommend.UserID,
+						FkCategory:    util.CategoriesMap[value.Label],
+						CategoryName:  value.Label,
+						Score:         value.Score,
+						FkMainDialog:  recommend.Recommend.DialogID,
+						FkDialog:      value.ID,
+						RecommendedAt: time.Now(),
+					})
 				}
 
 				err = recommendDB.Create(recommendModel)
