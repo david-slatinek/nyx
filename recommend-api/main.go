@@ -89,103 +89,101 @@ func main() {
 			select {
 			case <-c:
 				return
+			case recommend := <-recommendChannel:
+				log.Printf("Got recommend from queue: %v", recommend.Recommend.DialogID)
+
+				dialogs, err := util.GetDialogs(recommend.Recommend.DialogID)
+				if err != nil {
+					log.Printf("failed to get dialogs: %v", err)
+					continue
+				}
+
+				recommendResult, err := rClient.GetRecommendationDialogs(dialogs, util.CategoriesText)
+				if err != nil {
+					log.Printf("failed to get recommendation for dialogs: %v", err)
+					continue
+				}
+
+				if len(recommendResult) == 0 {
+					log.Printf("recommendResult is empty")
+					continue
+				}
+
+				recommendModel := make([]model.RecommendDB, len(recommendResult))
+				for key, r := range recommendResult {
+					recommendModel[key] = model.RecommendDB{
+						UserID:        recommend.Recommend.UserID,
+						FkCategory:    util.GetMainCategoryID(util.Categories, r.Label),
+						CategoryName:  r.Label,
+						Score:         r.Score,
+						FkMainDialog:  recommend.Recommend.DialogID,
+						FkDialog:      dialogs[key].ID,
+						RecommendedAt: time.Now(),
+					}
+				}
+
+				err = recommendDB.Create(recommendModel)
+				if err != nil {
+					log.Printf("failed to save recommend to db: %v", err)
+					continue
+				}
+
+				err = emailQueue.Send(recommendResult)
+				if err != nil {
+					log.Printf("failed to send to queue: %v", err)
+				} else {
+					log.Printf("recommendResult sent")
+				}
+
+				err = recommend.Delete()
+				if err != nil {
+					log.Printf("failed to delete message: %v", err)
+					continue
+				}
+
+				recommendResultSummary, err := rClient.GetRecommendationSummary(recommend.Recommend, util.CategoriesText)
+				if err != nil {
+					log.Printf("failed to get recommendation for summary: %v", err)
+					continue
+				}
+				if len(recommendResultSummary) == 0 {
+					log.Printf("recommendResultSummary is empty")
+					continue
+				}
+
+				recommendModel = make([]model.RecommendDB, len(recommendResultSummary))
+				for key, r := range recommendResultSummary {
+					recommendModel[key] = model.RecommendDB{
+						UserID:        recommend.Recommend.UserID,
+						FkCategory:    util.GetMainCategoryID(util.Categories, r.Label),
+						CategoryName:  r.Label,
+						Score:         r.Score,
+						FkMainDialog:  r.ID,
+						FkDialog:      r.ID,
+						RecommendedAt: time.Now(),
+					}
+				}
+
+				err = recommendDB.Create(recommendModel)
+				if err != nil {
+					log.Printf("failed to save recommend summary to db: %v", err)
+					continue
+				}
+
+				err = emailQueue.Send(recommendResultSummary)
+				if err != nil {
+					log.Printf("failed to send to queue: %v", err)
+					continue
+				} else {
+					log.Printf("recommendResultSummary sent")
+				}
+
+				err = recommend.Delete()
+				if err != nil {
+					log.Printf("failed to delete message: %v", err)
+				}
 			default:
 				break
-			}
-
-			recommend := <-recommendChannel
-
-			log.Printf("Got recommend from queue: %v", recommend.Recommend.DialogID)
-
-			dialogs, err := util.GetDialogs(recommend.Recommend.DialogID)
-			if err != nil {
-				log.Printf("failed to get dialogs: %v", err)
-				continue
-			}
-
-			recommendResult, err := rClient.GetRecommendationDialogs(dialogs, util.CategoriesText)
-			if err != nil {
-				log.Printf("failed to get recommendation for dialogs: %v", err)
-				continue
-			}
-
-			recommendModel := make([]model.RecommendDB, len(recommendResult))
-			for key, r := range recommendResult {
-				recommendModel[key] = model.RecommendDB{
-					UserID:        recommend.Recommend.UserID,
-					FkCategory:    util.GetMainCategoryID(util.Categories, r.Label),
-					CategoryName:  r.Label,
-					Score:         r.Score,
-					FkMainDialog:  recommend.Recommend.DialogID,
-					FkDialog:      dialogs[key].ID,
-					RecommendedAt: time.Now(),
-				}
-			}
-
-			err = recommendDB.Create(recommendModel)
-			if err != nil {
-				log.Printf("failed to save recommend to db: %v", err)
-				continue
-			}
-
-			if len(recommendResult) == 0 {
-				log.Printf("recommendResult is empty")
-				continue
-			}
-
-			err = emailQueue.Send(recommendResult)
-			if err != nil {
-				log.Printf("failed to send to queue: %v", err)
-			} else {
-				log.Printf("recommendResult sent")
-			}
-
-			err = recommend.Delete()
-			if err != nil {
-				log.Printf("failed to delete message: %v", err)
-				continue
-			}
-
-			recommendResultSummary, err := rClient.GetRecommendationSummary(recommend.Recommend, util.CategoriesText)
-			if err != nil {
-				log.Printf("failed to get recommendation for summary: %v", err)
-				continue
-			}
-			if len(recommendResultSummary) == 0 {
-				log.Printf("recommendResultSummary is empty")
-				continue
-			}
-
-			recommendModel = make([]model.RecommendDB, len(recommendResultSummary))
-			for key, r := range recommendResultSummary {
-				recommendModel[key] = model.RecommendDB{
-					UserID:        recommend.Recommend.UserID,
-					FkCategory:    util.GetMainCategoryID(util.Categories, r.Label),
-					CategoryName:  r.Label,
-					Score:         r.Score,
-					FkMainDialog:  r.ID,
-					FkDialog:      r.ID,
-					RecommendedAt: time.Now(),
-				}
-			}
-
-			err = recommendDB.Create(recommendModel)
-			if err != nil {
-				log.Printf("failed to save recommend summary to db: %v", err)
-				continue
-			}
-
-			err = emailQueue.Send(recommendResultSummary)
-			if err != nil {
-				log.Printf("failed to send to queue: %v", err)
-				continue
-			} else {
-				log.Printf("recommendResultSummary sent")
-			}
-
-			err = recommend.Delete()
-			if err != nil {
-				log.Printf("failed to delete message: %v", err)
 			}
 		}
 	}()
