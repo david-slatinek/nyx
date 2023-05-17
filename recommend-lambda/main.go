@@ -58,6 +58,12 @@ func main() {
 				err = email.SendEmail(recommend.Recommend)
 				if err != nil {
 					log.Printf("failed to send email: %v", err)
+					continue
+				}
+
+				err = recommend.Delete()
+				if err != nil {
+					log.Printf("failed to delete message: %v", err)
 				}
 				break
 			default:
