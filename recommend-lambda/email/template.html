@@ -6,10 +6,16 @@
 
 <body>
 
-<h1>Based on your chat, here are some product that might interest you!</h1>
-{{ range . }}
 <div>
-    <p>{{ .RecommendID }}</p>
+    <img src={{ .logo }} alt="img" height="400px"/>
+</div>
+
+<h1>Based on your chat, here are some product that might interest you!</h1>
+
+{{ range $index, $value := .recommend }}
+<div>
+    <a href="{{ $.URL }}/{{ .RecommendID }}">Product {{ inc $index }}</a>
+    <br>
     <br>
 </div>
 {{ end }}
