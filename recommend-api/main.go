@@ -12,6 +12,7 @@ import (
 	"math"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -91,7 +92,7 @@ func main() {
 			case <-c:
 				return
 			case recommend := <-recommendChannel:
-				log.Printf("Got recommend from queue: %v", recommend.Recommend.DialogID)
+				log.Printf("got recommend from queue: %v", recommend.Recommend.DialogID)
 
 				dialogs, err := util.GetDialogs(recommend.Recommend.DialogID)
 				if err != nil {
@@ -139,8 +140,6 @@ func main() {
 
 				recommendModel := make([]model.RecommendDB, 0, length)
 				for _, value := range objects {
-					log.Printf("value: %v", value)
-
 					recommendModel = append(recommendModel, model.RecommendDB{
 						UserID:        recommend.Recommend.UserID,
 						FkCategory:    util.CategoriesMap[value.Label],
@@ -158,12 +157,20 @@ func main() {
 					continue
 				}
 
-				err = emailQueue.Send(recommendResultSummary)
+				recommendQ := make([]map[string]string, length)
+				for key, value := range recommendModel {
+					recommendQ[key] = map[string]string{
+						"recommendID": strconv.Itoa(value.ID),
+						"imageID":     value.FkCategory,
+					}
+				}
+
+				err = emailQueue.Send(recommendQ)
 				if err != nil {
 					log.Printf("failed to send to queue: %v", err)
 					continue
 				} else {
-					log.Printf("recommendResultSummary sent")
+					log.Printf("recommend sent")
 				}
 
 				err = recommend.Delete()

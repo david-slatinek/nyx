@@ -42,7 +42,7 @@ func NewQueue(queueName string) (Queue, error) {
 	}, nil
 }
 
-func (q *Queue) Send(recommendation []model.Recommendation) error {
+func (q Queue) Send(recommendation []map[string]string) error {
 	message, err := json.Marshal(recommendation)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (q *Queue) Send(recommendation []model.Recommendation) error {
 	return err
 }
 
-func (q *Queue) Receive() (model.Recommend, func() error, error) {
+func (q Queue) Receive() (model.Recommend, func() error, error) {
 	result, err := q.svc.ReceiveMessage(&sqs.ReceiveMessageInput{
 		QueueUrl:            &q.queueUrl,
 		MaxNumberOfMessages: aws.Int64(1),
