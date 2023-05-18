@@ -44,7 +44,7 @@ func main() {
 
 	router.LoadHTMLFiles("index.html")
 
-	router.POST("/recommend", recommendFollowController.AddRecommendFollow)
+	router.GET("/recommend/:id", recommendFollowController.AddRecommendFollow)
 
 	srv := &http.Server{
 		Addr:         ":8020",

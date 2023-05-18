@@ -40,3 +40,10 @@ func (receiver RecommendFollow) Create(count model.RecommendFollow) error {
 
 	return receiver.database.WithContext(ctx).Create(&count).Error
 }
+
+func (receiver RecommendFollow) CreateOrder(order model.Order) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return receiver.database.WithContext(ctx).Create(&order).Error
+}
