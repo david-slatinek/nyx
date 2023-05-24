@@ -1,0 +1,33 @@
+# število priporočil, število klikov na priporočilo
+select t1.user_id, t1.count_recommend, t2.count_follow, t2.fk_recommend
+from (select user_id, count(*) as count_recommend
+      from recommend
+      group by user_id) AS t1,
+     (select fk_recommend, count(*) as count_follow
+      from recommend_follow
+      group by fk_recommend) AS t2
+order by t1.count_recommend, t2.count_follow;
+
+
+# število prodanih izdelkov, število klikov na priporočilo
+select t1.user_id, t2.count_sold, t1.count_recommend
+from (select user_id, count(*) as count_recommend
+      from recommend
+      group by user_id) AS t1,
+     (select fk_recommend, count(*) as count_sold
+      from order_table
+      group by fk_recommend) AS t2
+order by t1.count_recommend, t2.count_sold;
+
+
+# ne kliki na priporočila
+select re.fk_category, re.category_name, re.fk_main_dialog, count(*) as count_recommend_not_followed
+from recommend re
+         left join recommend_follow rf on re.id_recommend = rf.fk_recommend
+where rf.fk_recommend is null
+group by re.fk_category, re.category_name, re.fk_main_dialog;
+
+
+# čas priporočila in ocena
+select recommended_at, score
+from recommend;
