@@ -1,13 +1,13 @@
 name: Build Categories API and push it to AWS ECR
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - categories-api/**
       - .github/workflows/build/categories-api.yml
+  workflow_dispatch:
 
 jobs:
   build:
