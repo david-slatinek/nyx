@@ -35,14 +35,16 @@ jobs:
         env:
           COUCHDB_URL: ${{ secrets.COUCHDB_URL }}
           DB_NAME: ${{ secrets.DB_NAME }}
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: categories-api
+          IMAGE_TAG: latest
         run: |
           cd categories-api
           echo "COUCHDB_URL=$COUCHDB_URL" >> env/.env
           echo "DB_NAME=$DB_NAME" >> env/.env
           
-          docker build -t categories-api .
-          docker tag categories-api:latest ${{ steps.login-ecr.outputs.registry }}/${{ github.repository }}:latest
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
 
-      - name: Push Categories API to AWS ECR
+      - name: Push categories API to AWS ECR
         run: |
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ github.repository }}:latest
