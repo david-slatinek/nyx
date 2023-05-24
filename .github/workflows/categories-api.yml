@@ -1,4 +1,4 @@
-name: Build Categories API and push it to AWS ECR
+name: Build categories API and push it to AWS ECR
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build Categories API and push it to AWS ECR
+    name: Build categories API and push it to AWS ECR
     runs-on: ubuntu-latest
 
     permissions:
