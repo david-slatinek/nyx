@@ -45,5 +45,6 @@ jobs:
           docker tag categories-api:latest $REGISTRY:latest
 
       - name: Push categories API to AWS ECR
-        run: |
-          docker push $REGISTRY:latest
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: docker push $REGISTRY:latest
