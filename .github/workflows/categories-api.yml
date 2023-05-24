@@ -1,13 +1,13 @@
 name: Build Categories API and push it to AWS ECR
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - categories-api/**
       - .github/workflows/build/categories-api.yml
-    workflow_dispatch:
 
 jobs:
   build:
@@ -24,10 +24,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         env:
           ROLE: ${{ secrets.ROLE }}
-          REGION: ${{ secrets.REGION }}
         with:
           role-to-assume: $ROLE
-          aws-region: $REGION
 
       - name: Login to Amazon ECR Public
         uses: aws-actions/amazon-ecr-login@v1
