@@ -1,0 +1,45 @@
+name: Build Categories API and push it to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - categories-api/**
+      - .github/workflows/build/categories-api.yml
+    workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Categories API and push it to AWS ECR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        env:
+          ROLE: ${{ secrets.ROLE }}
+          REGION: ${{ secrets.REGION }}
+        with:
+          role-to-assume: $ROLE
+          aws-region: $REGION
+
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      - name: Build Categories API
+        run: |
+          cd categories-api
+          docker build -t categories-api .
+          docker tag categories-api:latest ${{ steps.login-ecr.outputs.registry }}/${{ github.repository }}:latest
+
+      - name: Push Categories API to AWS ECR
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ github.repository }}:latest
