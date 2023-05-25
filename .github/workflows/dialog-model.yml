@@ -34,4 +34,4 @@ jobs:
           context: dialog-model
           file: Dockerfile
           push: true
-          tags: $USERNAME/$PROJECT_NAME_API:latest
+          tags: $USERNAME/$PROJECT_NAME_DIALOG:latest
