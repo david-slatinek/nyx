@@ -1,0 +1,75 @@
+name: Build summary API
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - summary-api/**
+      - .github/workflows/summary-api.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build summary API and push it to AWS ECR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      - name: Create .env file
+        env:
+          DIALOG_URL: ${{ secrets.DIALOG_URL }}
+          SUMMARY_MODEL: ${{ secrets.SUMMARY_MODEL }}
+          COUCHDB_URL: ${{ secrets.COUCHDB_URL }}
+          DB_NAME: ${{ secrets.DB_NAME_SUMMARY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION_RECOMMEND }}
+        run: |
+          cd summary-api
+          echo "DIALOG_URL=$DIALOG_URL" >> env/.env
+          echo "SUMMARY_MODEL=$SUMMARY_MODEL" >> env/.env
+          echo "COUCHDB_URL=$COUCHDB_URL" >> env/.env
+          echo "DB_NAME=$DB_NAME" >> env/.env
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> env/.env
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> env/.env
+          echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> env/.env
+
+      - name: Create .env-prod
+        env:
+          DIALOG_URL: ${{ secrets.DIALOG_URL_PROD }}
+          SUMMARY_MODEL: ${{ secrets.SUMMARY_MODEL_PROD }}
+          COUCHDB_URL: ${{ secrets.COUCHDB_URL_PROD }}
+        run: |
+          cd summary-api
+          echo "DIALOG_URL=$DIALOG_URL" >> .env-prod
+          echo "SUMMARY_MODEL=$SUMMARY_MODEL" >> .env-prod
+          echo "COUCHDB_URL=$COUCHDB_URL" >> .env-prod
+
+      - name: Build summary api
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: |
+          cd summary-api
+          docker build -t summary-api .
+          docker tag summary-api:latest $REGISTRY/summary-api:latest
+
+      - name: Push summary API to AWS ECR
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: docker push $REGISTRY/summary-api:latest
