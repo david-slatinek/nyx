@@ -11,8 +11,8 @@ services:
       - "COUCHDB_USER=${COUCHDB_USER}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
     volumes:
-      - $HOME/dialog-db/couchdb-data:/opt/couchdb/data
-      - $HOME/dialog-db/couchdb-config:/opt/couchdb/etc/local.d
+      - $HOME/couchdb-data/couchdb-data:/opt/couchdb/data
+      - $HOME/couchdb-data/couchdb-config:/opt/couchdb/etc/local.d
     networks:
       - nyx-network
 
