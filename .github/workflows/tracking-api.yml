@@ -1,0 +1,55 @@
+name: Build tracking API
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - tracking-api/**
+      - .github/workflows/tracking-api.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build tracking API and push it to AWS ECR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      - name: Create .env file
+        env:
+          MYSQL_URL: ${{ secrets.MYSQL_URL }}
+        run: echo "MYSQL_URL=$MYSQL_URL" >> tracking-api/env/.env
+
+      - name: Create .env-prod
+        env:
+          MYSQL_URL: ${{ secrets.MYSQL_URL_PROD }}
+        run: echo "MYSQL_URL=$MYSQL_URL" >> tracking-api/.env-prod
+
+      - name: Build tracking API
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: |
+          cd tracking-api
+          docker build -t $REGISTRY/tracking-api:latest .
+          docker push $REGISTRY/tracking-api:latest
+
+      - name: Push tracking API to AWS ECS
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: docker push $REGISTRY/tracking-api:latest
