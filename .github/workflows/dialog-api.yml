@@ -52,7 +52,7 @@ jobs:
         env:
           COUCHDB_URL: ${{ secrets.COUCHDB_URL_PROD }}
           DIALOG_MODEL: ${{ secrets.DIALOG_MODEL_PROD }}
-        run:
+        run: |
           cd dialog-api
           echo "COUCHDB_URL=$COUCHDB_URL" >> .env-prod
           echo "DIALOG_MODEL=$DIALOG_MODEL" >> .env-prod
