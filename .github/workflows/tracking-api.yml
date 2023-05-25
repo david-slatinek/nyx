@@ -47,7 +47,6 @@ jobs:
         run: |
           cd tracking-api
           docker build -t $REGISTRY/tracking-api:latest .
-          docker push $REGISTRY/tracking-api:latest
 
       - name: Push tracking API to AWS ECS
         env:
