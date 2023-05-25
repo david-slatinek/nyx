@@ -34,11 +34,11 @@ jobs:
       - name: Create .env file
         env:
           COUCHDB_URL: ${{ secrets.COUCHDB_URL }}
-          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_NAME_CATEGORIES: ${{ secrets.DB_NAME_CATEGORIES }}
         run: |
           cd categories-api
           echo "COUCHDB_URL=$COUCHDB_URL" >> env/.env
-          echo "DB_NAME=$DB_NAME" >> env/.env
+          echo "DB_NAME=$DB_NAME_CATEGORIES" >> env/.env
 
       - name: Build categories API
         env:
