@@ -62,8 +62,7 @@ jobs:
           REGISTRY: ${{ secrets.REGISTRY }}
         run: |
           cd dialog-api
-          docker build -t dialog-api .
-          docker tag dialog-api:latest $REGISTRY/dialog-api:latest
+          docker build -t $REGISTRY/dialog-api:latest .
 
       - name: Push dialog API to AWS ECR
         env:
