@@ -45,7 +45,7 @@ jobs:
           REGISTRY: ${{ secrets.REGISTRY }}
         run: |
           cd couchdb
-          docker build -t couchdb .
+          docker compose build -t couchdb .
           docker tag couchdb:latest $REGISTRY/couchdb:latest
 
       - name: Push CouchDB to AWS ECR
