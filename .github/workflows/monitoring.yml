@@ -1,0 +1,45 @@
+name: Build monitoring
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - monitoring/**
+      - .github/workflows/monitoring.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build monitoring and push it to AWS ECR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      - name: Build monitoring
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: |
+          cd monitoring
+          docker build -t $REGISTRY/monitoring:latest .
+          docker push $REGISTRY/monitoring:latest
+
+      - name: Push monitoring to AWS ECS
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: docker push $REGISTRY/monitoring:latest
