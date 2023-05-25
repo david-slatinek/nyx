@@ -37,7 +37,6 @@ jobs:
         run: |
           cd monitoring
           docker build -t $REGISTRY/monitoring:latest .
-          docker push $REGISTRY/monitoring:latest
 
       - name: Push monitoring to AWS ECS
         env:
