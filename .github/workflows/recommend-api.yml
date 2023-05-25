@@ -68,8 +68,7 @@ jobs:
           REGISTRY: ${{ secrets.REGISTRY }}
         run: |
           cd recommend-api
-          docker build -t recommend-api .
-          docker tag recommend-api:latest $REGISTRY/recommend-api:latest
+          docker build -t $REGISTRY/recommend-api:latest .
 
       - name: Push recommend API to AWS ECR
         env:
