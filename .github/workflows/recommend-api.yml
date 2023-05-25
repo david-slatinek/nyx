@@ -1,0 +1,77 @@
+name: Build recommend API
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - recommend-api/**
+      - .github/workflows/recommend-api.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build recommend API and push it to AWS ECR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      - name: Create .env file
+        env:
+          DIALOG_URL: ${{ secrets.DIALOG_URL }}
+          RECOMMEND_MODEL: ${{ secrets.RECOMMEND_MODEL }}
+          CATEGORY_URL: ${{ secrets.CATEGORY_URL }}
+          MYSQL_URL: ${{ secrets.MYSQL_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION_RECOMMEND }}
+        run: |
+          cd recommend-api
+          echo "DIALOG_URL=$DIALOG_URL" >> env/.env
+          echo "RECOMMEND_MODEL=$RECOMMEND_MODEL" >> env/.env
+          echo "CATEGORY_URL=$CATEGORY_URL" >> env/.env
+          echo "MYSQL_URL=$MYSQL_URL" >> env/.env
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> env/.env
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> env/.env
+          echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> env/.env
+
+      - name: Create .env-prod
+        env:
+          DIALOG_URL: ${{ secrets.DIALOG_URL_PROD }}
+          RECOMMEND_MODEL: ${{ secrets.RECOMMEND_MODEL_PROD }}
+          CATEGORY_URL: ${{ secrets.CATEGORY_URL_PROD }}
+          MYSQL_URL: ${{ secrets.MYSQL_URL_PROD }}
+        run: |
+          cd recommend-api
+          echo "DIALOG_URL=$DIALOG_URL" >> .env-prod
+          echo "RECOMMEND_MODEL=$RECOMMEND_MODEL" >> .env-prod
+          echo "CATEGORY_URL=$CATEGORY_URL" >> .env-prod
+          echo "MYSQL_URL=$MYSQL_URL" >> .env-prod
+
+      - name: Build recommend API
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: |
+          cd recommend-api
+          docker build -t recommend-api .
+          docker tag recommend-api:latest $REGISTRY/recommend-api:latest
+
+      - name: Push recommend API to AWS ECR
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: docker push $REGISTRY/recommend-api:latest
