@@ -2,7 +2,7 @@ name: Build tracking API
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
     paths:
       - tracking-api/**
       - .github/workflows/tracking-api.yml
