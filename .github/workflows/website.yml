@@ -1,0 +1,50 @@
+name: Build website
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - website/**
+      - .github/workflows/website.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build website and push it to AWS ECR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      - name: Create .env file
+        env:
+          API_URL: ${{ secrets.API_URL }}
+        run: echo "API_URL=$API_URL" >> website/.env
+
+      - name: Build website
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: |
+          cd website
+          docker build -t $REGISTRY/website:latest .
+          docker push $REGISTRY/website:latest
+
+      - name: Push website to AWS ECS
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: docker push $REGISTRY/website:latest
