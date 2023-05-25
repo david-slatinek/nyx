@@ -37,8 +37,8 @@ jobs:
           COUCHDB_PASSWORD: ${{ secrets.COUCHDB_PASSWORD }}
         run: |
           cd couchdb
-          echo "COUCHDB_USER=COUCHDB_USER" >> env/.env
-          echo "COUCHDB_PASSWORD=COUCHDB_PASSWORD" >> env/.env
+          echo "COUCHDB_USER=COUCHDB_USER" >> .env
+          echo "COUCHDB_PASSWORD=COUCHDB_PASSWORD" >> .env
 
       - name: Build CouchDB
         env:
