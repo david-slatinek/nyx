@@ -37,3 +37,5 @@ jobs:
           context: "{{defaultContext}}:dialog-model"
           push: true
           tags: ${{ env.USERNAME }}/${{ env.PROJECT_NAME_DIALOG }}:latest
+          cache-from: type=registry,ref=user/app:latest
+          cache-to: type=inline
