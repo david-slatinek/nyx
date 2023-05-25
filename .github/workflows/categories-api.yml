@@ -45,8 +45,7 @@ jobs:
           REGISTRY: ${{ secrets.REGISTRY }}
         run: |
           cd categories-api
-          docker build -t categories-api .
-          docker tag categories-api:latest $REGISTRY/categories-api:latest
+          docker build -t $REGISTRY/categories-api:latest .
 
       - name: Push categories API to AWS ECR
         env:
