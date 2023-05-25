@@ -31,16 +31,19 @@ jobs:
         with:
           registry-type: public
 
-      - name: Build Categories API
+      - name: Create .env file
         env:
           COUCHDB_URL: ${{ secrets.COUCHDB_URL }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          REGISTRY: ${{ secrets.REGISTRY }}
         run: |
           cd categories-api
           echo "COUCHDB_URL=$COUCHDB_URL" >> env/.env
           echo "DB_NAME=$DB_NAME" >> env/.env
-          
+
+      - name: Build Categories API
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: |
           docker build -t categories-api .
           docker tag categories-api:latest $REGISTRY/categories-api:latest
 
