@@ -1,0 +1,57 @@
+name: Build recommend-db
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - recommend-db/**
+      - .github/workflows/recommend-db.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build recommend-db and push it to AWS ECR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      - name: Create .env file
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+        run: |
+          cd recommend-db
+          echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" >> .env
+          echo "MYSQL_DATABASE=$MYSQL_DATABASE" >> .env
+          echo "MYSQL_USER=$MYSQL_USER" >> .env
+          echo "MYSQL_PASSWORD=$MYSQL_PASSWORD" >> .env
+
+      - name: Build recommend-db
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: |
+          cd recommend-db
+          docker build -t $REGISTRY/recommend-db:latest .
+
+      - name: Push recommend-db to AWS ECR
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+        run: docker push $REGISTRY/recommend-db:latest
