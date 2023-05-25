@@ -66,8 +66,7 @@ jobs:
           REGISTRY: ${{ secrets.REGISTRY }}
         run: |
           cd summary-api
-          docker build -t summary-api .
-          docker tag summary-api:latest $REGISTRY/summary-api:latest
+          docker build -t $REGISTRY/summary-api:latest .
 
       - name: Push summary API to AWS ECR
         env:
