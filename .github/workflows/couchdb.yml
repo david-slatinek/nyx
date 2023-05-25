@@ -1,4 +1,4 @@
-name: Build CouchDB
+name: Build couchDB
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build CouchDB and push it to AWS ECR
+    name: Build couchDB and push it to AWS ECR
     runs-on: ubuntu-latest
 
     permissions:
@@ -40,7 +40,7 @@ jobs:
           echo "COUCHDB_USER=COUCHDB_USER" >> .env
           echo "COUCHDB_PASSWORD=COUCHDB_PASSWORD" >> .env
 
-      - name: Build CouchDB
+      - name: Build couchDB
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
         run: |
@@ -48,7 +48,7 @@ jobs:
           docker build -t couchdb .
           docker tag couchdb:latest $REGISTRY/couchdb:latest
 
-      - name: Push CouchDB to AWS ECR
+      - name: Push couchDB to AWS ECR
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
         run: docker push $REGISTRY/couchdb:latest
