@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  couchdb:
+    image: "${REGISTRY}/couchdb"
+    container_name: dialog-db
+    restart: on-failure
+    ports:
+      - "5984:5984"
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+    volumes:
+      - $HOME/couchdb-data/couchdb-data:/opt/couchdb/data
+      - $HOME/couchdb-data/couchdb-config:/opt/couchdb/etc/local.d
+    networks:
+      - nyx-network
+
+  dialog-api:
+    image: "${REGISTRY}/dialog-api"
+    depends_on:
+      - couchdb
+      - dialog-model
+    ports:
+      - "8080:8080"
+    container_name: dialog-api-con
+    hostname: dialog-api-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - GIN_MODE=release
+    networks:
+      - nyx-network
+
+  dialog-model:
+    image: "${DOCKERHUB}/dialog-model"
+    ports:
+      - "9080:9080"
+    container_name: dialog-model-con
+    hostname: dialog-model-service
+    restart: unless-stopped
+    networks:
+      - nyx-network
+
+  website:
+    image: "${REGISTRY}/website"
+    depends_on:
+      - dialog-api
+    ports:
+      - "3000:3000"
+    container_name: nyx-web-con
+    hostname: nyx-web
+    restart: unless-stopped
+    networks:
+      - nyx-network
+
+networks:
+  nyx-network:
+    name: nyx-network
+    driver: bridge
