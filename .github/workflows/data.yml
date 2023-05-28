@@ -1,0 +1,82 @@
+name: Manage data
+
+on:
+  #  schedule:
+  #    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  get_data:
+    name: Get data
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./dialog-model
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+
+      - name: Install dependencies
+        run: poetry install --only data
+
+      - name: Create .env
+        env:
+          DIALOG_URL_SERVER: ${{ secrets.DIALOG_URL_SERVER }}
+        run: echo "DIALOG_URL=$DIALOG_URL_SERVER" >> src/.env
+
+      - name: Get data
+        run: |
+          cd src
+          poetry run python get_data.py
+
+      - name: Create git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add new data to dvc
+        run: poetry run dvc add data/test.txt data/train.txt
+
+      #      - name: Get current date
+      #        run: echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> "$GITHUB_ENV"
+
+      - name: Commit new data
+        env:
+          DATE: $(date +'%Y-%m-%d %H:%M:%S')
+        run: |
+          if ! [[ `git status --porcelain` ]]; then
+            exit 0
+          fi
+          git add data/test.txt.dvc data/train.txt.dvc
+          git commit -m "Create new dataset on $DATE"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+      - name: Set credentials
+        env:
+          DVC_USER: ${{ secrets.DVC_USER }}
+          DVC_PASSWORD: ${{ secrets.DVC_PASSWORD }}
+        run: |
+          poetry run dvc remote modify origin --local auth basic
+          poetry run dvc remote modify origin --local user "$DVC_USER"
+          poetry run dvc remote modify origin --local password "$DVC_PASSWORD"
+
+      - name: Push data to dvc
+        run: poetry run dvc push
