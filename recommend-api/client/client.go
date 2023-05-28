@@ -60,7 +60,7 @@ func (receiver Client) GetRecommendationDialogs(dialogs []model.Dialog, categori
 	var recommendResult []model.Recommendation
 	for _, value := range recommendResponse.Responses {
 		for i := range value.Scores {
-			if value.Scores[i] > 0.4 {
+			if value.Scores[i] > 0.5 {
 				recommendResult = append(recommendResult, model.Recommendation{
 					ID:    dialogsMap[value.Text],
 					Label: value.Labels[i],
@@ -104,7 +104,7 @@ func (receiver Client) GetRecommendationSummary(summary model.Recommend, categor
 
 	var recommendResult []model.Recommendation
 	for i := range recommendResponse.Scores {
-		if recommendResponse.Scores[i] > 0.4 {
+		if recommendResponse.Scores[i] > 0.5 {
 			recommendResult = append(recommendResult, model.Recommendation{
 				ID:    summary.DialogID,
 				Label: recommendResponse.Labels[i],
