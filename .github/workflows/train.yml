@@ -1,0 +1,61 @@
+name: Train model
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [ "Manage data" ]
+    types:
+      - completed
+
+jobs:
+  train:
+    name: Train model
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    defaults:
+      run:
+        working-directory: ./dialog-model
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+
+      - name: Install dependencies
+        run: poetry install --only main,dev
+
+      - name: Set credentials
+        env:
+          DVC_USER: ${{ secrets.DVC_USER }}
+          DVC_PASSWORD: ${{ secrets.DVC_PASSWORD }}
+        run: |
+          poetry run dvc remote modify origin --local auth basic
+          poetry run dvc remote modify origin --local user "$DVC_USER"
+          poetry run dvc remote modify origin --local password "$DVC_PASSWORD"
+
+      - name: Get train and test data
+        run: poetry run dvc pull data/train.txt.dvc data/test.txt.dvc
+
+      - name: Train model
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+        run: |
+          echo $MLFLOW_TRACKING_URI >> $GITHUB_PATH
+          echo $MLFLOW_TRACKING_USERNAME >> $GITHUB_PATH
+          echo $MLFLOW_TRACKING_PASSWORD >> $GITHUB_PATH
+          
+          cd train
+          poetry run python train.py
