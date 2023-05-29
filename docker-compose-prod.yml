@@ -16,6 +16,16 @@ services:
     networks:
       - nyx-network
 
+  dialog-model:
+    image: "${DOCKERHUB}/dialog-model"
+    ports:
+      - "9080:9080"
+    container_name: dialog-model-con
+    hostname: dialog-model-service
+    restart: unless-stopped
+    networks:
+      - nyx-network
+
   dialog-api:
     image: "${REGISTRY}/dialog-api"
     depends_on:
@@ -33,16 +43,6 @@ services:
     networks:
       - nyx-network
 
-  dialog-model:
-    image: "${DOCKERHUB}/dialog-model"
-    ports:
-      - "9080:9080"
-    container_name: dialog-model-con
-    hostname: dialog-model-service
-    restart: unless-stopped
-    networks:
-      - nyx-network
-
   website:
     image: "${REGISTRY}/website"
     depends_on:
@@ -52,6 +52,111 @@ services:
     container_name: nyx-web-con
     hostname: nyx-web
     restart: unless-stopped
+    networks:
+      - nyx-network
+
+  summary-model:
+    image: "${REGISTRY}/summary-model"
+    ports:
+      - "9050:9050"
+    container_name: summary-model-con
+    hostname: summary-model-service
+    restart: unless-stopped
+    networks:
+      - nyx-network
+
+  summary-api:
+    image: "${REGISTRY}/summary-api"
+    depends_on:
+      - summary-model
+      - couchdb
+    container_name: summary-api-con
+    hostname: summary-api-service
+    restart: unless-stopped
+    env_file:
+      - .env-prod
+    networks:
+      - nyx-network
+
+  categories-api:
+    image: "${REGISTRY}/categories-api"
+    depends_on:
+      - couchdb
+    ports:
+      - "8050:8050"
+    container_name: categories-api-con
+    hostname: categories-api-service
+    restart: unless-stopped
+    env_file:
+      - .env-prod
+    environment:
+      - GIN_MODE=release
+    networks:
+      - nyx-network
+
+  recommend-model:
+    image: "${REGISTRY}/recommend-model"
+    ports:
+      - "9040:9040"
+    container_name: recommend-model-con
+    hostname: recommend-model-service
+    restart: unless-stopped
+    networks:
+      - nyx-network
+
+  mysql-db:
+    image: "${REGISTRY}/recommend-db"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ${HOME}/recommend-db/:/var/lib/mysql
+    networks:
+      - nyx-network
+    env_file: .env
+    container_name: recommend-db-con
+    hostname: recommend-db
+    restart: unless-stopped
+
+  recommend-api:
+    image: "${REGISTRY}/recommend-api"
+    depends_on:
+      - recommend-model
+      - mysql-db
+      - categories-api
+    container_name: recommend-api-con
+    hostname: recommend-api-service
+    restart: unless-stopped
+    env_file:
+      - .env-prod
+    environment:
+      - GIN_MODE=release
+    networks:
+      - nyx-network
+
+  tracking-api:
+    image: "${REGISTRY}/tracking-api"
+    depends_on:
+      - mysql-db
+    ports:
+      - "8020:8020"
+    container_name: tracking-api-con
+    hostname: tracking-api-service
+    restart: unless-stopped
+    env_file:
+      - .env-prod
+    environment:
+      - GIN_MODE=release
+    networks:
+      - nyx-network
+
+  monitoring:
+    image: "${REGISTRY}/monitoring"
+    depends_on:
+      - mysql-db
+    container_name: monitoring
+    restart: on-failure
+    ports:
+      - "3000:3000"
     networks:
       - nyx-network
 
