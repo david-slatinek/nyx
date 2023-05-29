@@ -38,7 +38,7 @@ jobs:
         run: |
           cd categories-api
           echo "COUCHDB_URL=$COUCHDB_URL" >> env/.env
-          echo "DB_NAME=$DB_NAME_CATEGORIES" >> env/.env
+          echo "DB_NAME_CATEGORIES=$DB_NAME_CATEGORIES" >> env/.env
 
       - name: Build categories API
         env:

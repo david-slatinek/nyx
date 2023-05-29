@@ -36,7 +36,7 @@ jobs:
           DIALOG_URL: ${{ secrets.DIALOG_URL }}
           SUMMARY_MODEL: ${{ secrets.SUMMARY_MODEL }}
           COUCHDB_URL: ${{ secrets.COUCHDB_URL }}
-          DB_NAME: ${{ secrets.DB_NAME_SUMMARY }}
+          DB_NAME_SUMMARY: ${{ secrets.DB_NAME_SUMMARY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION_RECOMMEND }}
@@ -45,7 +45,7 @@ jobs:
           echo "DIALOG_URL=$DIALOG_URL" >> env/.env
           echo "SUMMARY_MODEL=$SUMMARY_MODEL" >> env/.env
           echo "COUCHDB_URL=$COUCHDB_URL" >> env/.env
-          echo "DB_NAME=$DB_NAME" >> env/.env
+          echo "DB_NAME_SUMMARY=$DB_NAME_SUMMARY" >> env/.env
           echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> env/.env
           echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> env/.env
           echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> env/.env
