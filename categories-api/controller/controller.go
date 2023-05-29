@@ -82,7 +82,7 @@ func (receiver CategoryController) GetCategory(ctx *gin.Context) {
 
 func (receiver CategoryController) GetCategories(ctx *gin.Context) {
 	all, err := receiver.cache.Get("all")
-	if err == nil {
+	if err == nil && all != nil {
 		ctx.JSON(http.StatusOK, all)
 		return
 	}
