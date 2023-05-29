@@ -86,4 +86,4 @@ jobs:
             cd nyx
             docker-compose -f docker-compose-prod.yml down
             chmod +x script.sh
-            ./script.sh -a $REGISTRY -d $DOCKER_USERNAME && docker-compose -f docker-compose-prod.yml up -d
+            ./script.sh -a "$REGISTRY" -d "$DOCKER_USERNAME" && docker-compose -f docker-compose-prod.yml up -d
