@@ -6,7 +6,7 @@ services:
     container_name: monitoring
     restart: on-failure
     ports:
-      - "3000:3000"
+      - "4000:3000"
     networks:
       - nyx-network
     volumes:
@@ -20,3 +20,4 @@ networks:
 volumes:
   grafana-storage:
     name: grafana-storage
+    external: true
