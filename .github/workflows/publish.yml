@@ -27,6 +27,7 @@ jobs:
           COUCHDB_USER: ${{ secrets.COUCHDB_USER }}
           COUCHDB_PASSWORD: ${{ secrets.COUCHDB_PASSWORD }}
           COUCHDB_URL: ${{ secrets.COUCHDB_URL_PROD }}
+          DIALOG_MODEL: ${{ secrets.DIALOG_MODEL_PROD }}
           DIALOG_URL: ${{ secrets.DIALOG_URL_PROD }}
           SUMMARY_MODEL: ${{ secrets.SUMMARY_MODEL_PROD }}
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -46,6 +47,7 @@ jobs:
           echo "COUCHDB_USER=$COUCHDB_USER" >> .env
           echo "COUCHDB_PASSWORD=$COUCHDB_PASSWORD" >> .env
           echo "COUCHDB_URL=$COUCHDB_URL" >> .env
+          echo "DIALOG_MODEL=$DIALOG_MODEL" >> .env
           echo "DIALOG_URL=$DIALOG_URL" >> .env
           echo "SUMMARY_MODEL=$SUMMARY_MODEL" >> .env
           echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" >> .env
