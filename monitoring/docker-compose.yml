@@ -1,16 +1,22 @@
 version: "3.9"
 
 services:
-  grafana:
+  monitoring:
     build: .
-    container_name: grafana
+    container_name: monitoring
     restart: on-failure
     ports:
       - "3000:3000"
     networks:
       - nyx-network
+    volumes:
+      - grafana-storage:/var/lib/grafana
 
 networks:
   nyx-network:
     name: nyx-network
     driver: bridge
+
+volumes:
+  grafana-storage:
+    name: grafana-storage
