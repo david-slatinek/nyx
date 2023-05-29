@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   couchdb:
-    image: "${REGISTRY}/couchdb"
+    image: "${REGISTRY}/couchdb:latest"
     container_name: dialog-db
     restart: on-failure
     ports:
@@ -15,9 +15,15 @@ services:
       - $HOME/couchdb-data/couchdb-config:/opt/couchdb/etc/local.d
     networks:
       - nyx-network
+    healthcheck:
+      test: curl --fail http://localhost:5984/_up
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   dialog-model:
-    image: "${DOCKERHUB}/dialog-model"
+    image: "${DOCKERHUB}/dialog-model:latest"
     ports:
       - "9080:9080"
     container_name: dialog-model-con
@@ -27,10 +33,12 @@ services:
       - nyx-network
 
   dialog-api:
-    image: "${REGISTRY}/dialog-api"
+    image: "${REGISTRY}/dialog-api:latest"
     depends_on:
-      - couchdb
-      - dialog-model
+      couchdb:
+        condition: service_healthy
+      dialog-model:
+        condition: service_started
     ports:
       - "8080:8080"
     container_name: dialog-api-con
@@ -44,7 +52,7 @@ services:
       - nyx-network
 
   website:
-    image: "${REGISTRY}/website"
+    image: "${REGISTRY}/website:latest"
     depends_on:
       - dialog-api
     ports:
@@ -52,11 +60,13 @@ services:
     container_name: nyx-web-con
     hostname: nyx-web
     restart: unless-stopped
+    env_file:
+      - .env
     networks:
       - nyx-network
 
   summary-model:
-    image: "${REGISTRY}/summary-model"
+    image: "${DOCKERHUB}/summary-model:latest"
     ports:
       - "9050:9050"
     container_name: summary-model-con
@@ -66,36 +76,39 @@ services:
       - nyx-network
 
   summary-api:
-    image: "${REGISTRY}/summary-api"
+    image: "${REGISTRY}/summary-api:latest"
     depends_on:
-      - summary-model
-      - couchdb
+      summary-model:
+        condition: service_started
+      couchdb:
+        condition: service_healthy
     container_name: summary-api-con
     hostname: summary-api-service
     restart: unless-stopped
     env_file:
-      - .env-prod
+      - .env
     networks:
       - nyx-network
 
   categories-api:
-    image: "${REGISTRY}/categories-api"
+    image: "${REGISTRY}/categories-api:latest"
     depends_on:
-      - couchdb
+      couchdb:
+        condition: service_healthy
     ports:
       - "8050:8050"
     container_name: categories-api-con
     hostname: categories-api-service
     restart: unless-stopped
     env_file:
-      - .env-prod
+      - .env
     environment:
       - GIN_MODE=release
     networks:
       - nyx-network
 
   recommend-model:
-    image: "${REGISTRY}/recommend-model"
+    image: "${DOCKERHUB}/recommend-model:latest"
     ports:
       - "9040:9040"
     container_name: recommend-model-con
@@ -105,62 +118,81 @@ services:
       - nyx-network
 
   mysql-db:
-    image: "${REGISTRY}/recommend-db"
+    image: "${REGISTRY}/recommend-db:latest"
     ports:
       - "3306:3306"
     volumes:
       - ${HOME}/recommend-db/:/var/lib/mysql
     networks:
       - nyx-network
-    env_file: .env
+    env_file:
+      - .env
     container_name: recommend-db-con
     hostname: recommend-db
     restart: unless-stopped
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   recommend-api:
-    image: "${REGISTRY}/recommend-api"
+    image: "${REGISTRY}/recommend-api:latest"
     depends_on:
-      - recommend-model
-      - mysql-db
-      - categories-api
+      recommend-model:
+        condition: service_started
+      mysql-db:
+        condition: service_healthy
+      categories-api:
+        condition: service_started
     container_name: recommend-api-con
     hostname: recommend-api-service
     restart: unless-stopped
     env_file:
-      - .env-prod
+      - .env
     environment:
       - GIN_MODE=release
     networks:
       - nyx-network
 
   tracking-api:
-    image: "${REGISTRY}/tracking-api"
+    image: "${REGISTRY}/tracking-api:latest"
     depends_on:
-      - mysql-db
+      mysql-db:
+        condition: service_healthy
     ports:
       - "8020:8020"
     container_name: tracking-api-con
     hostname: tracking-api-service
     restart: unless-stopped
     env_file:
-      - .env-prod
+      - .env
     environment:
       - GIN_MODE=release
     networks:
       - nyx-network
 
   monitoring:
-    image: "${REGISTRY}/monitoring"
+    image: "${REGISTRY}/monitoring:latest"
     depends_on:
-      - mysql-db
+      mysql-db:
+        condition: service_healthy
     container_name: monitoring
     restart: on-failure
     ports:
-      - "3000:3000"
+      - "4000:3000"
     networks:
       - nyx-network
+    volumes:
+      - grafana-storage:/var/lib/grafana
 
 networks:
   nyx-network:
     name: nyx-network
     driver: bridge
+
+volumes:
+  grafana-storage:
+    name: grafana-storage
+    external: true
