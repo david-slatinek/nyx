@@ -6,7 +6,7 @@ const Dotenv = require("dotenv-webpack");
 const deps = require("./package.json").dependencies;
 module.exports = (_, argv) => ({
     output: {
-        publicPath: "http://localhost:3000/",
+        publicPath: "http://127.0.0.1:3000/",
     },
 
     resolve: {
