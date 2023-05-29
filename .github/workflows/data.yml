@@ -30,7 +30,7 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --only data
+        run: poetry install --only data,dev
 
       - name: Create .env
         env:
