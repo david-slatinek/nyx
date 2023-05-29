@@ -50,8 +50,8 @@ jobs:
       - name: Add new data to dvc
         run: poetry run dvc add data/test.txt data/train.txt
 
-      #      - name: Get current date
-      #        run: echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> "$GITHUB_ENV"
+      - name: Get current date
+        run: echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> "$GITHUB_ENV"
 
       - name: Commit new data
         env:
@@ -61,7 +61,7 @@ jobs:
             exit 0
           fi
           git add data/test.txt.dvc data/train.txt.dvc
-          git commit -m "Create new dataset on $DATE"
+          git commit -m "Create new dataset on ${{ env.DATE }}"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
