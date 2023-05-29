@@ -2,17 +2,18 @@ name: Publish to production
 
 on:
   workflow_dispatch:
-#  workflow_run:
-#    workflows: [ "Build categories API", "Build couchDB", "Build dialog API", "Build dialog model", "Build monitoring",
-#                 "Build recommend API", "Build recommend-db", "Build recommend-model", "Build summary API", "Build summary-model",
-#                 "Build tracking API", "Build website" ]
-#    types:
-#      - completed
+  workflow_run:
+    workflows: [ "Build categories API", "Build couchDB", "Build dialog API", "Build dialog model", "Build monitoring",
+                 "Build recommend API", "Build recommend-db", "Build recommend-model", "Build summary API", "Build summary-model",
+                 "Build tracking API", "Build website" ]
+    types:
+      - completed
 
 jobs:
   publish:
     name: Deploy to production
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     permissions:
       contents: read
