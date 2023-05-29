@@ -9,9 +9,12 @@ import axios from "axios";
 
 const App = () => {
     let url = process.env.API_URL;
+    console.log("API URL: " + url);
+
     if (url === undefined) {
         url = "http://localhost:8080";
     }
+    console.log("API URL: " + url);
 
     window.addEventListener("beforeunload", function (event) {
         try {
@@ -35,7 +38,6 @@ const App = () => {
 
     fetch(url + "/dialog", {
         method: "GET",
-        mode: "cors",
     })
         .then(response => response.json())
         .then(data => {
