@@ -19,18 +19,62 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Copy docker-compose-prod.yml to server
+
+      - name: Create .env file
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+          DOCKERHUB: ${{ secrets.DOCKER_USERNAME }}
+          COUCHDB_USER: ${{ secrets.COUCHDB_USER }}
+          COUCHDB_PASSWORD: ${{ secrets.COUCHDB_PASSWORD }}
+          COUCHDB_URL: ${{ secrets.COUCHDB_URL_PROD }}
+          DIALOG_URL: ${{ secrets.DIALOG_URL_PROD }}
+          SUMMARY_MODEL: ${{ secrets.SUMMARY_MODEL_PROD }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          RECOMMEND_MODEL: ${{ secrets.RECOMMEND_MODEL_PROD }}
+          CATEGORY_URL: ${{ secrets.CATEGORY_URL_PROD }}
+          MYSQL_URL: ${{ secrets.MYSQL_URL_PROD }}
+          API_URL: ${{ secrets.API_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          echo "REGISTRY=$REGISTRY" >> .env
+          echo "DOCKERHUB=$DOCKERHUB" >> .env
+          echo "COUCHDB_USER=$COUCHDB_USER" >> .env
+          echo "COUCHDB_PASSWORD=$COUCHDB_PASSWORD" >> .env
+          echo "COUCHDB_URL=$COUCHDB_URL" >> .env
+          echo "DIALOG_URL=$DIALOG_URL" >> .env
+          echo "SUMMARY_MODEL=$SUMMARY_MODEL" >> .env
+          echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" >> .env
+          echo "MYSQL_DATABASE=$MYSQL_DATABASE" >> .env
+          echo "MYSQL_USER=$MYSQL_USER" >> .env
+          echo "MYSQL_PASSWORD=$MYSQL_PASSWORD" >> .env
+          echo "RECOMMEND_MODEL=$RECOMMEND_MODEL" >> .env
+          echo "CATEGORY_URL=$CATEGORY_URL" >> .env
+          echo "MYSQL_URL=$MYSQL_URL" >> .env
+          echo "API_URL=$API_URL" >> .env
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
+          echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> .env
+
+      - name: Copy script.sh and docker-compose-prod.yml to server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_KEY }}
-          source: "script.sh,docker-compose-prod.yml"
+          source: ".env,script.sh,docker-compose-prod.yml"
           target: /home/${{ secrets.SERVER_USERNAME }}/nyx
 
       - uses: actions/checkout@v3
       - name: Start services
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -42,4 +86,4 @@ jobs:
             cd nyx
             docker-compose -f docker-compose-prod.yml down
             chmod +x script.sh
-            ./script.sh && docker-compose -f docker-compose-prod.yml up -d
+            ./script.sh -a $REGISTRY -d $DOCKER_USERNAME && docker-compose -f docker-compose-prod.yml up -d
