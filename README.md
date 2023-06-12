@@ -4,15 +4,14 @@
     <img alt="AWS Lambda" src="https://img.shields.io/badge/aws_lambda-FF9900?style=for-the-badge&logo=awslambda&logoColor=white"/>
     <img alt="MySQL" src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white"/>
     <img alt="Docker" src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white"/>
-    <img alt="React" src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
+    <img alt="Amazon EC2" src="https://img.shields.io/badge/amazon_ec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"/>
     <img alt="Github Actions" src="https://img.shields.io/badge/Github%20Actions-282a2e?style=for-the-badge&logo=githubactions&logoColor=367cfe"/>
     <img alt="Amazon SQS" src="https://img.shields.io/badge/amazon_sqs-FF4F8B?style=for-the-badge&logo=amazonsqs&logoColor=white"/>
+    <img alt="React" src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
     <img alt="dvc" src="https://img.shields.io/badge/dvc-13ADC7?style=for-the-badge&logo=dvc&logoColor=white"/>
     <img alt="Python" src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
     <img alt="Apache CouchDB" src="https://img.shields.io/badge/apache_couchdb-E42528?style=for-the-badge&logo=apachecouchdb&logoColor=white"/>
-    <img alt="Amazon EC2" src="https://img.shields.io/badge/amazon_ec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"/>
     <img alt="Grafana" src="https://img.shields.io/badge/grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white"/>
-    <img alt="React" src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white"/>
 </div>
 
 ![Logo](images/logo.png)
