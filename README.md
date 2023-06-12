@@ -49,7 +49,7 @@ A recommendation system for recommending products for an online store that consi
 - [Grafana dashboard](monitoring)
     - Dashboard for project monitoring.
 
-We mainly used AWS services for the project infrastructure:
+AWS services were mainly for the project infrastructure:
 
 - Amazon SQS
     - Message queue for communication between the components.
@@ -57,11 +57,11 @@ We mainly used AWS services for the project infrastructure:
     - Virtual machine for hosting the project.
 - Amazon ECR
     - Docker container registry for storing Docker images.
-        - Due to the free tier limitations, we used Docker Hub for storing images for models.
+        - Due to the free tier limitations, Docker Hub was used for storing images for models.
 - Amazon Lambda
     - Serverless computing service for running the recommendation email function.
 
-Due to the complexity of the project, we used DVC and DagsHub for managing the machine learning models and data.
+Due to the complexity of the project, DVC and DagsHub were used for managing the machine learning models and data.
 
 # Project infrastructure
 
