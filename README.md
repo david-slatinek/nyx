@@ -49,7 +49,7 @@ A recommendation system for recommending products for an online store that consi
 - [Grafana dashboard](monitoring)
     - Dashboard for project monitoring.
 
-AWS services were mainly for the project infrastructure:
+AWS services were mainly used for the project infrastructure:
 
 - Amazon SQS
     - Message queue for communication between the components.
